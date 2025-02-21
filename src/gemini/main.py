@@ -7,7 +7,8 @@ from util import test_captcha, save_result
 
 def main():
     data = os.listdir("data")
-    model_lst = ["gemini-2.0-flash", "gemini-2.0-flash-lite-preview-02-05", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"]
+    # model_lst = ["gemini-2.0-flash", "gemini-2.0-flash-lite-preview-02-05", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"]
+    model_lst = ["gemini-1.5-pro"]
 
     image_file_lst = random.sample(data, 500)
     image_file_lst = ["data/" + file_name for file_name in image_file_lst]
