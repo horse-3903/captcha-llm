@@ -10,8 +10,8 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=API_KEY)
 
-def test_captcha(prompt: int, image_file_name: str, model: str = "gemini-2.0-flash-exp") -> tuple:
-    with open(f"src/prompt_{prompt}.txt", "r") as f:
+def test_captcha(image_file_name: str, model: str = "gemini-2.0-flash-exp") -> tuple:
+    with open("src/prompt.txt", "r") as f:
         prompt = f.read()
         
     actual_solution = image_file_name.split(".")[0].split("_")[1]
@@ -25,7 +25,10 @@ def test_captcha(prompt: int, image_file_name: str, model: str = "gemini-2.0-fla
         try:
             response = client.models.generate_content(
                 model=model,
-                contents=[prompt, image]
+                contents=[
+                    prompt,
+                    image,
+                ]
             )
             predicted_solution = response.text
             

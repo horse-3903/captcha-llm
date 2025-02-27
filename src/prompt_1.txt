@@ -1,0 +1,1 @@
+Analyse this image and extract only the CAPTCHA text. The CAPTCHA text is case-sensitive. Keep in mind that there are no whitespaces and there are only alphanumeric characters in the CAPTCHA text. Do not include any additional explanations, descriptions, or formatting—just return the exact CAPTCHA solution as plain text.
