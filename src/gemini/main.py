@@ -22,7 +22,7 @@ def main():
             if predicted_solution == "ERROR_RATE_LIMIT":
                 continue
             
-            save_result(f"results/raw/gemini-{prompt}/", model, actual_solution, predicted_solution)
+            save_result(f"results/gemini-{prompt}/raw/", model, actual_solution, predicted_solution)
 
 if __name__ == "__main__":
     main()
