@@ -16,7 +16,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 def test_captcha(prompt: int, image_file_name: str, model: str = "gpt-4o-mini") -> tuple:
-    with open(f"src/prompt_{prompt}.txt", "r") as f:
+    with open(f"prompts/prompt_{prompt}.txt", "r") as f:
         prompt = f.read()
     
     actual_solution = image_file_name.split(".")[0].split("_")[1]

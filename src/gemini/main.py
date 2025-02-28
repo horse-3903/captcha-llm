@@ -6,11 +6,10 @@ from tqdm import tqdm
 from util import test_captcha, save_result
 
 def main():
-    prompt = 1 # 1 or 2
+    prompt = 3 # 1, 2 or 3
     
     data = os.listdir("data")
-    # model_lst = ["gemini-2.0-flash"]
-    model_lst = ["gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"]
+    model_lst = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-flash-8b", "gemini-1.5-pro"]
 
     image_file_lst = random.sample(data, 500)
     image_file_lst = ["data/" + file_name for file_name in image_file_lst]
@@ -23,7 +22,7 @@ def main():
             if predicted_solution == "ERROR_RATE_LIMIT":
                 continue
             
-            save_result("results/gemini-2/", model, actual_solution, predicted_solution)
+            save_result(f"results/raw/gemini-{prompt}/", model, actual_solution, predicted_solution)
 
 if __name__ == "__main__":
     main()

@@ -6,7 +6,7 @@ from tqdm import tqdm
 from util import test_captcha, save_result
 
 def main():
-    prompt = 1 # 1 or 2
+    prompt = 1 # 1, 2 or 3
     
     data = os.listdir("data")
     model_lst = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"]
@@ -23,7 +23,7 @@ def main():
             if predicted_solution == "ERROR_RATE_LIMIT":
                 continue
             
-            save_result(f"results/openai-{prompt}/", model, actual_solution, predicted_solution)
+            save_result(f"results/raw/openai-{prompt}/", model, actual_solution, predicted_solution)
 
 if __name__ == "__main__":
     main()
