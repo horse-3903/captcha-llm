@@ -6,10 +6,10 @@ from difflib import SequenceMatcher
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
-def main():
-    raw_path = "results/gemini/raw/"
-    clean_path = "results/gemini/clean/"
-
+def clean_data(raw_path, clean_path):    
+    assert os.path.exists(raw_path)
+    assert os.path.exists(clean_path)
+    
     files = os.listdir(raw_path)
 
     for file in files:
@@ -28,6 +28,15 @@ def main():
             writer = csv.writer(f)
             writer.writerow(header+["Similarity", "Similarity (Non Case-Sensitive)"])
             writer.writerows(data)
-            
+
+def main():
+    parent_path = "results/gemini-3/"
+    raw_path = f"{parent_path}/raw/"
+    clean_path = f"{parent_path }/clean/"
+
+    os.makedirs(clean_path, exist_ok=True)
+    
+    clean_data(raw_path, clean_path)
+  
 if __name__ == "__main__":
     main()
