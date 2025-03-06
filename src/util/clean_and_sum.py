@@ -13,7 +13,7 @@ def clean_and_summarise(parent_path):
     summarise_data(parent_path, clean_path)
     
 def main():
-    parent_path = "results/openai-2/"
+    parent_path = "results/llama-2/"
     
     clean_and_summarise(parent_path)
     

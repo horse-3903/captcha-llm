@@ -7,8 +7,12 @@ from openai import OpenAI
 
 # Load API key
 load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=API_KEY)
+API_KEY = os.environ.get("OPENROUTER_API_KEY")
+
+client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",
+  api_key=API_KEY,
+)
 
 # Function to encode the image in base64
 def encode_image(image_path):
@@ -34,9 +38,17 @@ def test_captcha(prompt: int, image_file_name: str, model: str = "gpt-4o-mini") 
                     {
                         "role": "user",
                         "content": [
-                            {"type": "text", "text": prompt},
-                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}},
-                        ],
+                            {
+                                "type": "text",
+                                "text": prompt
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                }
+                            }
+                        ]
                     }
                 ],
             )
@@ -44,7 +56,7 @@ def test_captcha(prompt: int, image_file_name: str, model: str = "gpt-4o-mini") 
             return actual_solution, predicted_solution
 
         except Exception as e:
-            if "rate limit" in str(e).lower():
+            if hasattr(response, "error"):
                 if attempt < max_retries - 1:
                     print(f"\nRate limit exceeded. Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
                     time.sleep(delay)
@@ -57,7 +69,7 @@ def test_captcha(prompt: int, image_file_name: str, model: str = "gpt-4o-mini") 
 
 def save_result(parent_dir: str, model: str, actual_solution: str, predicted_solution: str):
     parent_dir = parent_dir.rstrip("/")
-    results_file_name = f"{parent_dir}/{model}_results.csv"
+    results_file_name = f"{parent_dir}/{model.split('/')[1].replace(':free', '')}_results.csv"
     
     os.makedirs(parent_dir, exist_ok=True)
     

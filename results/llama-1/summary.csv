@@ -1,0 +1,3 @@
+Model,Result,Similarity,Similarity (Non Case-Sensitive)
+llama-3.2-11b-vision-instruct,0.04225352112676056,0.45200017693803946,0.696695234275359
+llama-3.2-90b-vision-instruct,0.1486725663716814,0.64532803412856,0.7660163892770588

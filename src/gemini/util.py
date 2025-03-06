@@ -57,4 +57,4 @@ def save_result(parent_dir: str, model: str, actual_solution: str, predicted_sol
 
     with open(results_file_name, "a", encoding="utf-8") as f:
         csv_writer = csv.writer(f)
-        csv_writer.writerow([actual_solution, predicted_solution, int(actual_solution == predicted_solution)])
+        csv_writer.writerow([actual_solution, predicted_solution.replace(",", "-"), int(actual_solution == predicted_solution)])
