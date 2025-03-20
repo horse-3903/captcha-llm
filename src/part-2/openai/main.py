@@ -7,10 +7,10 @@ from tqdm import tqdm
 from util import crosscheck_captcha, save_result
 
 def main():
-    prompt = 1 # 1, 2 or 3
-    iteration = 1
+    prompt = 1
+    iteration = 2
     
-    model_lst = ["gemini-2.0-flash-lite", "gemini-1.5-flash", "gemini-1.5-flash-8b"] # , "gemini-1.5-pro", "gemini-2.0-flash"]
+    model_lst = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"]
     random.shuffle(model_lst)
     
     data = []
@@ -40,7 +40,7 @@ def main():
             if not res:
                 continue
             
-            save_result(f"./results/part-2/gemini-{prompt}-{iteration}/raw/", f"{model}_results.csv", data=[res])
+            save_result(f"./results/part-2/openai-{prompt}-{iteration}/raw/", f"{model}_results.csv", data=[res])
 
 if __name__ == "__main__":
     main()
