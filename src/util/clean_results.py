@@ -1,6 +1,7 @@
 import os
 import csv
 
+from tqdm import tqdm
 from difflib import SequenceMatcher
 
 def similar(a, b):
@@ -13,6 +14,7 @@ def clean_data(raw_path, clean_path):
     files = os.listdir(raw_path)
 
     for file in files:
+        print(file)
         with open(f"{raw_path}/{file}", "r", encoding="utf-8") as f:
             reader = csv.reader(f)
             data = list(reader)
@@ -22,15 +24,28 @@ def clean_data(raw_path, clean_path):
         
         data = [*filter(lambda x: x, data)]
         data = [[r.strip("\n").encode("ascii", errors="ignore").decode() for r in row] for row in data]
-        for i, v in enumerate(data):
-            if len(v) != 3:
-                print(i, v)
-        data = [[row[0], row[1], row[2], int(row[0]==row[2]), similar(row[0], row[2]), similar(row[0].lower(), row[2].lower())] for row in data]
+        
+        for v in tqdm(enumerate(data)):
+            if len(v) == 2:
+                new_data = []
+                
+                for row in data:
+                    try:
+                        new_data.append([row[0], row[1], int(row[0]==row[1]), similar(row[0], row[1]), similar(row[0].lower(), row[1].lower())])
+                    except IndexError:
+                        continue
+                    
+            elif len(v) == 3:
+                for row in data:
+                    try:
+                        new_data.append([row[0], row[1], row[2], int(row[0]==row[2]), similar(row[0], row[2]), similar(row[0].lower(), row[2].lower())])
+                    except IndexError:
+                        continue
             
         with open(f"{clean_path}/{file}", "w+") as f:
             writer = csv.writer(f)
             writer.writerow(header+["Result", "Similarity", "Similarity (Non Case-Sensitive)"])
-            writer.writerows(data)
+            writer.writerows(new_data)
 
 def main():
     parent_path = "results/gemini-3/"

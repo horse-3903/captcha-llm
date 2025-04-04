@@ -15,8 +15,8 @@ def summarise_data(parent_path, clean_path):
             header = list(next(reader))
             rows = list(reader)
             
-        header = header[3:]
-        rows = [r[3:] for r in rows if r]
+        header = header[2:]
+        rows = [r[2:] for r in rows if r]
         mean = []
         
         for i in range(len(header)):
