@@ -13,7 +13,7 @@ gemini_tester = GeminiCaptchaTester(model_lst=gemini_model_lst)
 
 for i in range(3):
     prompt_id = i+1
-    gemini_tester.set_data_path(f"./results/new/part-1/prompt-{prompt_id}/gemini/raw")
-    gemini_tester.set_result_path(f"./results/new/part-2/prompt-{prompt_id}/")
+    gemini_tester.set_data_path(f"./results/text-captcha/test-captcha/prompt-{prompt_id}/gemini/raw")
+    gemini_tester.set_result_path(f"./results/text-captcha/crosscheck-captcha/prompt-{prompt_id}/")
     
     gemini_tester.crosscheck_captcha(prompt_id, no_samples=500)

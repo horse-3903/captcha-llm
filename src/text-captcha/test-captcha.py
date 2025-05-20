@@ -17,26 +17,26 @@ openrouter_model_lst = ["qwen/qwen-vl-plus", "qwen/qwen-2.5-vl-72b-instruct", "q
 gemini_tester = GeminiCaptchaTester(
     model_lst=gemini_model_lst,
     data_path="./data",
-    result_path="./results/new/part-1"
+    result_path="./results/text-captcha/test-captcha"
 )
 
 openai_tester = OpenAIAsyncCaptchaTester(
     model_lst=openai_model_lst,
     data_path="./data",
-    result_path="./results/new/part-1"
+    result_path="./results/text-captcha/test-captcha"
 )
 
 openrouter_tester = OpenRouterAsyncCaptchaTester(
     model_lst=openrouter_model_lst,
     data_path="./data",
-    result_path="./results/new/part-1/"
+    result_path="./results/text-captcha/test-captcha"
 )
 
 async def test_openai():
     tester = OpenAIAsyncCaptchaTester(
         model_lst=[random.choice(openai_model_lst)],
         data_path="./data",
-        result_path="./results/test/openai"
+        result_path="./results/text-captcha/test/openai"
     )
     
     await tester.test_captcha(prompt_id=1, no_samples=10)
@@ -45,7 +45,7 @@ async def test_gemini():
     tester = GeminiCaptchaTester(
         model_lst=[random.choice(gemini_model_lst)],
         data_path="./data",
-        result_path="./results/test/gemini"
+        result_path="./results/text-captcha/test/gemini"
     )
     
     await tester.test_captcha(prompt_id=1, no_samples=10)
@@ -54,7 +54,7 @@ async def test_openrouter():
     tester = OpenRouterAsyncCaptchaTester(
         model_lst=[random.choice(openrouter_model_lst)],
         data_path="./data",
-        result_path="./results/test/openrouter"
+        result_path="./results/text-captcha/test/openrouter"
     )
     
     await tester.test_captcha(prompt_id=1, no_samples=2)
@@ -63,9 +63,9 @@ async def main():
     # Run all testers concurrently
     for i in range(3):
         prompt_id = i+1
-        gemini_tester.set_result_path(f"./results/new/part-1/prompt-{prompt_id}/gemini/")
-        openai_tester.set_result_path(f"./results/new/part-1/prompt-{prompt_id}/openai/")
-        openrouter_tester.set_result_path(f"./results/new/part-1/prompt-{prompt_id}/openrouter/")
+        gemini_tester.set_result_path(f"./results/text-captcha/test-captcha/prompt-{prompt_id}/gemini/")
+        openai_tester.set_result_path(f"./results/text-captcha/test-captcha/prompt-{prompt_id}/openai/")
+        openrouter_tester.set_result_path(f"./results/text-captcha/test-captcha/prompt-{prompt_id}/openrouter/")
         
         await openrouter_tester.test_captcha(prompt_id=prompt_id, no_samples=500, batch_size=50)
     
