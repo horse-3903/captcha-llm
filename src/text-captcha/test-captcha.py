@@ -41,14 +41,14 @@ async def test_openai():
     
     await tester.test_captcha(prompt_id=1, no_samples=10)
     
-async def test_gemini():
+def test_gemini():
     tester = GeminiCaptchaTester(
         model_lst=[random.choice(gemini_model_lst)],
         data_path="./data",
         result_path="./results/text-captcha/test/gemini"
     )
     
-    await tester.test_captcha(prompt_id=1, no_samples=10)
+    tester.test_captcha(prompt_id=1, no_samples=10)
     
 async def test_openrouter():
     tester = OpenRouterAsyncCaptchaTester(

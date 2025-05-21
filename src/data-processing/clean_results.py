@@ -24,11 +24,11 @@ def clean_data(raw_path, clean_path):
         
         data = [*filter(lambda x: x, data)]
         data = [[r.strip("\n").encode("ascii", errors="ignore").decode() for r in row] for row in data]
+
+        new_data = []
         
         for v in tqdm(enumerate(data)):
-            if len(v) == 2:
-                new_data = []
-                
+            if len(v) == 2:                
                 for row in data:
                     try:
                         new_data.append([row[0], row[1], int(row[0]==row[1]), similar(row[0], row[1]), similar(row[0].lower(), row[1].lower())])

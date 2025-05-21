@@ -61,17 +61,17 @@ def combine_summary(parent_path):
         writer.writerows([header, *sorted(final_data)])
     
 def main():
-    parent_path_lst = ["results/new/part-1/prompt-1/", "results/new/part-1/prompt-2/", "results/new/part-1/prompt-3/"]
+    # parent_path_lst = ["results/new/part-1/prompt-1/", "results/new/part-1/prompt-2/", "results/new/part-1/prompt-3/"]
     
-    for parent_path in parent_path_lst:
-        for provider in os.listdir(parent_path):            
-            if os.listdir(os.path.join(parent_path, provider)):
-                print(os.path.join(parent_path, provider))
-                tidy_data(os.path.join(parent_path, provider))
+    # for parent_path in parent_path_lst:
+    #     for provider in os.listdir(parent_path):            
+    #         if os.listdir(os.path.join(parent_path, provider)):
+    #             print(os.path.join(parent_path, provider))
+    #             tidy_data(os.path.join(parent_path, provider))
 
-    parent_path = "results/new/part-2/prompt-1"
+    parent_path = "results/ascii-captcha/text"
     # tidy_data(parent_path)
-    summarise_data("results/new/part-2/prompt-1", "results/new/part-2/prompt-1/clean")
+    summarise_data(parent_path, f"{parent_path}/clean")
     # overall_summary(parent_path)
     # combine_summary(parent_path)
     
