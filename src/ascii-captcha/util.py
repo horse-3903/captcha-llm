@@ -10,6 +10,23 @@ from google.genai import Client as GeminiClient
 
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+def text_to_image(text: str, font_path: str = os.path.join(root_path, "fonts", "courier.ttf"), font_size: int = 16) -> Image.Image:
+    lines = text.split("\n")
+    font = ImageFont.truetype(font_path, font_size)
+
+    max_width = max(font.getbbox(line)[2] - font.getbbox(line)[0] for line in lines)
+    total_height = sum(font.getbbox(line)[3] - font.getbbox(line)[1] for line in lines)
+
+    image = Image.new("RGB", (int(max_width + 10), int(total_height + 10)), color="white")
+    draw = ImageDraw.Draw(image)
+
+    y = 5
+    for line in lines:
+        draw.text((5, y), line, fill="black", font=font)
+        y += font.getbbox(line)[3] - font.getbbox(line)[1]
+
+    return image
+
 class GeminiASCIICaptchaTester:
     """
     A tester class for solving ASCII CAPTCHAs using Google's Gemini API.
@@ -43,28 +60,11 @@ class GeminiASCIICaptchaTester:
         samples = random.sample(files, n)
         return [os.path.join(self.data_path, f) for f in samples]
 
-    def ascii_to_image(self, ascii_art: str, font_path: str = os.path.join(root_path, "fonts", "ARIAL.ttf"), font_size: int = 14) -> Image.Image:
-        lines = ascii_art.split("\n")
-        font = ImageFont.truetype(font_path, font_size)
-
-        max_width = max(font.getbbox(line)[2] - font.getbbox(line)[0] for line in lines)
-        total_height = sum(font.getbbox(line)[3] - font.getbbox(line)[1] for line in lines)
-
-        image = Image.new("RGB", (int(max_width + 10), int(total_height + 10)), color="white")
-        draw = ImageDraw.Draw(image)
-
-        y = 5
-        for line in lines:
-            draw.text((5, y), line, fill="black", font=font)
-            y += font.getbbox(line)[3] - font.getbbox(line)[1]
-
-        return image
-
     def process_sample(self, model: str, ascii_text: str, label: str):
         prompt = f"{ascii_text}\n\nRespond with only the CAPTCHA solution. Do not include any explanation, formatting, or extra characters." if not self.render_ascii_as_image else "Solve the CAPTCHA from the image. Respond with only the CAPTCHA solution. Do not include any explanation, formatting, or extra characters."
         content = [prompt]
         if self.render_ascii_as_image:
-            image = self.ascii_to_image(ascii_text)
+            image = text_to_image(ascii_text)
             buffer = BytesIO()
             image.save(buffer, format="PNG")
             content.append(buffer.getvalue())  # type: ignore
