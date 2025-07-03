@@ -1,0 +1,18 @@
+python doctr/references/recognition/train_pytorch.py crnn_vgg16_bn ^
+    --device 0 ^
+    --train_path data/ascii-captcha-image-doctr/recog/train ^
+    --val_path data/ascii-captcha-image-doctr/recog/val ^
+    --output_dir models/ascii-captcha ^
+    --epochs 20 ^
+    -b 2 ^
+    --lr 1e-3 ^
+    --wd 1e-4 ^
+    --input_size 32 ^
+    -j 0 ^
+    --sched cosine ^
+    --early-stop ^
+    --early-stop-epochs 5 ^
+    --early-stop-delta 0.005 ^
+    --vocab custom ^
+    --char-set "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" ^
+    --val-samples=200
