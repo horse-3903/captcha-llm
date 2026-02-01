@@ -173,3 +173,8 @@ cython_debug/
 data/
 doctr/
 models/
+old/
+results/
+ollama/**/results/
+*.whl
+*.zip

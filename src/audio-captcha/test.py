@@ -1,27 +1,13 @@
-import os
-import random
-from pydub import AudioSegment
-from pydub.generators import WhiteNoise
+from util import preview_audio_modes
 
-# === Configuration ===
-input_dir = "data/audio-captcha/ami-data-segments/ES2002a_0400"  # replace with your directory containing .wav files
-output_path = "src/audio-captcha/noisy_output.wav"
-noise_level_db = -40
+if __name__ == "__main__":
+    preview_audio_modes(
+        base_audio=r"C:\Users\chong\Desktop\Coding\Github\captcha-llm\data\audio-captcha\audio\id-174.wav",
+        background_audio=r"C:\Users\chong\Desktop\Coding\Github\captcha-llm\data\audio-captcha\bg-24k.wav",
+        output_dir=r"C:\Users\chong\Desktop\Coding\Github\captcha-llm\results\audio-samples",
+        gaussian_level=1.5,
+        overlap_count=2,
+        overlap_ratios=[0.6, 0.6],
+        background_boost=4.0,
+    )
 
-# === Load a Random WAV File ===
-wav_files = [f for f in os.listdir(input_dir) if f.lower().endswith(".wav")]
-if not wav_files:
-    raise FileNotFoundError("No .wav files found in the specified directory.")
-
-selected_file = random.choice(wav_files)
-input_path = os.path.join(input_dir, selected_file)
-print(f"Selected file: {selected_file}")
-
-# === Add White Noise ===
-audio = AudioSegment.from_wav(input_path)
-noise = WhiteNoise().to_audio_segment(duration=len(audio)).apply_gain(noise_level_db)
-noisy_audio = audio.overlay(noise)
-
-# === Export the Noisy Audio ===
-noisy_audio.export(output_path, format="wav")
-print(f"Noisy audio saved as: {output_path}")
