@@ -384,6 +384,45 @@ class ASCIICaptchaTester:
             )
         self.logger.debug(f"[{model}] Saved result for {actual} (t={response_time_sec:.4f}s)")
 
+    def write_timings_summary(self, out_path: str):
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        with open(out_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                [
+                    "Model",
+                    "Samples",
+                    "Total Time (s)",
+                    "Mean (s)",
+                    "Median (s)",
+                    "P95 (s)",
+                    "Min (s)",
+                    "Max (s)",
+                ]
+            )
+            for model, timings in self.model_timings.items():
+                if not timings:
+                    continue
+                arr = sorted(timings)
+                count = len(arr)
+                total = sum(arr)
+                mean = total / count
+                median = arr[count // 2] if count % 2 == 1 else (arr[count // 2 - 1] + arr[count // 2]) / 2
+                p95_index = max(int(round(0.95 * (count - 1))), 0)
+                p95 = arr[p95_index]
+                writer.writerow(
+                    [
+                        model,
+                        count,
+                        f"{total:.4f}",
+                        f"{mean:.4f}",
+                        f"{median:.4f}",
+                        f"{p95:.4f}",
+                        f"{arr[0]:.4f}",
+                        f"{arr[-1]:.4f}",
+                    ]
+                )
+
     # --------------------------
     # Debug Mode
     # --------------------------

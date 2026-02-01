@@ -336,3 +336,36 @@ class AudioCaptchaTester:
     def start(self):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self._run_all())
+
+    def write_timings_summary(self, out_path: str):
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        with open(out_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                [
+                    "Model",
+                    "Samples",
+                    "Total Time (s)",
+                    "Mean (s)",
+                    "Median (s)",
+                    "P95 (s)",
+                    "Min (s)",
+                    "Max (s)",
+                ]
+            )
+            for model, timings in self.timings.items():
+                if not timings:
+                    continue
+                arr = np.array(timings, dtype=float)
+                writer.writerow(
+                    [
+                        model,
+                        len(arr),
+                        f"{arr.sum():.4f}",
+                        f"{arr.mean():.4f}",
+                        f"{np.median(arr):.4f}",
+                        f"{np.percentile(arr, 95):.4f}",
+                        f"{arr.min():.4f}",
+                        f"{arr.max():.4f}",
+                    ]
+                )
