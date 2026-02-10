@@ -369,10 +369,8 @@ def main():
             results_dir=inference_dir,
             sample_limit=min(args.audio_samples, 10),
             models=[
-                "google/gemini-2.5-flash",
-                "google/gemini-2.5-flash-lite",
-                "openai/gpt-4o-audio-preview",
-                "mistralai/voxtral-small-24b-2507",
+                "google/gemini-3-flash-preview",
+                "openai/gpt-audio-mini",
             ],
             mode="none",
             background_file=str(background_file),

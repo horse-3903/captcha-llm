@@ -8,14 +8,12 @@ if __name__ == "__main__":
     # Set the CSV path, model list, and results path
     csv_path = "data/audio-captcha/extended.csv"  # Path to your CSV file
     model_list = [
-        "google/gemini-2.5-flash",
-        "google/gemini-2.5-flash-lite",
-
-        "openai/gpt-4o-audio-preview",
+        "google/gemini-3-flash-preview",
+        "openai/gpt-audio-mini",
         "mistralai/voxtral-small-24b-2507"
     ]
     
-    results_path = "results/audio-final/none"
+    results_path = "results/audio-final-2/"
     # Choose the mode: "none", "background", "combined", or "gaussian"
 
     tester = AudioCaptchaTester(
@@ -25,9 +23,9 @@ if __name__ == "__main__":
         mode="none",
         sample_limit=100,
         background_file="data/audio-captcha/bg-24k.wav",
-        gaussian_level=1.50,
-        background_boost=4.0,         # louder background
-        combined_ratios=[0.6, 0.6],   # for overlapping
+        gaussian_level=1.70,
+        background_boost=5.0,         # louder background
+        combined_ratios=[0.7, 0.7],   # for overlapping
         concurrency_limit=100
     )
 

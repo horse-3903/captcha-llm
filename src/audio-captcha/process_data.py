@@ -84,7 +84,7 @@ def tidy_results(parent_path: str):
 
 
 def main():
-    parent_path = "results/audio-test-2"
+    parent_path = "results/audio-final-2"
     
     for path in os.listdir(parent_path):
         tidy_results(os.path.join(parent_path, path))

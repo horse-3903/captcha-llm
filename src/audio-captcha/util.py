@@ -281,7 +281,8 @@ class AudioCaptchaTester:
                 audio_b64 = audio_to_base64_bytes(audio_bytes)
 
                 prompt = (
-                    f"Answer choices:\n"
+                    "You have been given a mp3 audio file that covers a topic of conversation with potential noise or overlapped voices. Which of the following answers regarding one of the conversations in the audio file is correct.\n"
+                    "Answer choices:\n"
                     f"A: {answers[0]}\n"
                     f"B: {answers[1]}\n"
                     f"C: {answers[2]}\n"
