@@ -1,32 +1,45 @@
+<div align="center">
+
 # captcha-llm
 
-Research code for evaluating modern LLMs on CAPTCHA-style tasks:
-- ASCII CAPTCHA recognition (text and rendered-as-image)
-- Audio CAPTCHA multiple-choice recognition
-- OCR experiments (DeepSeek OCR)
-- Fine-tune data generation for ASCII CAPTCHAs
+Research framework for evaluating LLM performance on CAPTCHA-solving tasks
 
-This repository is organized as runnable scripts rather than a packaged Python library.
+[![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/github/license/horse-3903/captcha-llm?style=flat-square)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/horse-3903/captcha-llm?style=flat-square)](../../commits)
+[![Stars](https://img.shields.io/github/stars/horse-3903/captcha-llm?style=flat-square)](../../stargazers)
 
-## Contents
+</div>
 
-- `src/ascii-captcha/` - ASCII CAPTCHA evaluation (text + image render) and utilities
-- `src/audio-captcha/` - Audio CAPTCHA evaluation (audio transformations + OpenRouter inference)
-- `src/fine-tune/` - ASCII CAPTCHA fine-tuning data generation
-- `src/deepseek-ocr/` - OCR experiments and Docker helper
-- `src/benchmarks/` - Small-batch timing benchmarks (generation + inference)
-- `ollama/` - Experimental local/ollama scripts
-- `fonts/` - Fonts used for rendering ASCII CAPTCHAs
-- `data/` - Datasets (not committed)
-- `results/` - Outputs (ignored)
+---
 
-## Requirements
+## Overview
 
-- Python 3.10+ recommended
-- Windows PowerShell (examples below use PowerShell)
-- Optional GPU for heavy OCR or TTS workloads
+`captcha-llm` is a research codebase that systematically evaluates modern large language models on a variety of CAPTCHA-style challenges, including ASCII text CAPTCHAs, rendered image CAPTCHAs, and audio CAPTCHAs. Models are queried via OpenRouter, results are logged as CSVs, and the repository also includes tooling for fine-tune data generation and small-batch timing benchmarks.
 
-Install dependencies from `requirements.txt` (top-level is a general set; submodules may require extras):
+## Features
+
+- **ASCII CAPTCHA evaluation** — test LLMs on text and image-rendered ASCII CAPTCHAs
+- **Audio CAPTCHA evaluation** — multiple-choice audio recognition with optional noise transforms (`none`, `background`, `gaussian`, `combined`)
+- **Fine-tune data generation** — produce Parquet datasets of ASCII CAPTCHA samples for supervised fine-tuning
+- **DeepSeek OCR experiments** — standalone OCR scripts with a Docker helper
+- **Benchmarking suite** — measures CAPTCHA generation and inference latency across modalities
+
+## Tech Stack
+
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![OpenRouter](https://img.shields.io/badge/OpenRouter-FF6B35?style=for-the-badge&logo=openai&logoColor=white)](https://openrouter.ai)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- An [OpenRouter](https://openrouter.ai) API key (required for model inference)
+- Optional: GPU for heavy OCR or TTS workloads
+
+### Installation
 
 ```powershell
 python -m venv venv
@@ -34,92 +47,53 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Some modules use optional libraries (e.g., `torch`, `scipy`, `pyarrow`, `tqdm`, `Pillow`). Install what your workflow requires.
+Some modules use optional libraries (`torch`, `scipy`, `pyarrow`, `tqdm`, `Pillow`). Install only what your workflow requires.
 
-## Environment variables
+### Environment Variables
 
-Audio and ASCII model queries are routed via OpenRouter by default.
+```powershell
+$env:OPENROUTER_API_KEY = "your-key-here"
+```
 
-- `OPENROUTER_API_KEY` (required for audio and ASCII inference)
+Or add to a `.env` file at the project root.
 
-Set in `.env` or your shell environment.
+## Usage
 
-## ASCII CAPTCHA evaluation
+### ASCII CAPTCHA Evaluation
 
-Main entrypoint:
-
-- `src/ascii-captcha/main.py`
-
-Key behavior:
-- Generates ASCII CAPTCHA samples from `data/ascii-captcha` (expects `.txt` files)
-- Can render ASCII art as images before sending to models
-- Saves per-model raw CSVs under `results/.../raw/`
-
-Example (edit the model list and parameters in `main.py`):
+Edit the model list and parameters inside `src/ascii-captcha/main.py`, then run:
 
 ```powershell
 python src\ascii-captcha\main.py
 ```
 
-## Audio CAPTCHA evaluation
+Generates ASCII CAPTCHA samples from `data/ascii-captcha/` (expects `.txt` files), optionally renders them as images, and saves per-model CSV results under `results/.../raw/`.
 
-Main entrypoint:
+### Audio CAPTCHA Evaluation
 
-- `src/audio-captcha/main.py`
-
-Key behavior:
-- Uses a CSV such as `data/audio-captcha/extended.csv`
-- Applies optional transformations: `none`, `background`, `combined`, `gaussian`
-- Sends audio to OpenRouter models
-- Writes raw per-model results to `results/.../raw/`
-
-Example (edit the model list and parameters in `main.py`):
+Edit the model list and parameters inside `src/audio-captcha/main.py`, then run:
 
 ```powershell
 python src\audio-captcha\main.py
 ```
 
-## Fine-tune data generation (ASCII)
+Reads from a CSV such as `data/audio-captcha/extended.csv`, applies the configured audio transformation, queries OpenRouter, and writes raw results to `results/.../raw/`.
 
-Generate ASCII CAPTCHA fine-tune data as Parquet:
-
-- `src/fine-tune/generate_data.py`
+### Fine-Tune Data Generation
 
 ```powershell
 python src\fine-tune\generate_data.py
 ```
 
-Output goes to `data/ascii-captcha-ft/`.
+Outputs a Parquet dataset to `data/ascii-captcha-ft/`.
 
-## DeepSeek OCR experiments
-
-Scripts:
-
-- `src/deepseek-ocr/src/main.py`
-- `src/deepseek-ocr/Dockerfile`
-
-These are research experiments and not productionized. Use as needed.
-
-## Benchmarks (small-batch timing)
-
-Timing script:
-
-- `src/benchmarks/collect_timings.py`
-
-This measures:
-- ASCII CAPTCHA generation time (figlet + render)
-- Audio CAPTCHA generation time (none/gaussian/background/combined)
-- Optional audio inference timing (small batch)
-
-Run:
+### Benchmarks
 
 ```powershell
+# Generation timing only
 python src\benchmarks\collect_timings.py --ascii-samples 25 --audio-samples 10
-```
 
-Enable audio inference timing (requires `OPENROUTER_API_KEY`):
-
-```powershell
+# Include audio inference timing (requires OPENROUTER_API_KEY)
 python src\benchmarks\collect_timings.py --run-audio-inference
 ```
 
@@ -127,21 +101,24 @@ Outputs:
 - `results/benchmarks/captcha_generation_times.csv`
 - `results/benchmarks/audio_inference/timings_summary.csv`
 
-## Results and data
+## Project Structure
 
-Generated results and datasets are intentionally ignored in git:
-- `results/`
-- `data/`
-- `*.whl`, `*.zip`
+```
+captcha-llm/
+├── src/
+│   ├── ascii-captcha/     # ASCII CAPTCHA evaluation (text + image render)
+│   ├── audio-captcha/     # Audio CAPTCHA evaluation with noise transforms
+│   ├── fine-tune/         # Fine-tune dataset generation
+│   ├── deepseek-ocr/      # OCR experiments + Dockerfile
+│   └── benchmarks/        # Generation & inference timing benchmarks
+├── fonts/                 # Fonts used to render ASCII CAPTCHAs
+├── ollama/                # Experimental local/Ollama scripts
+├── data/                  # Datasets (not committed)
+└── results/               # Outputs (git-ignored)
+```
 
-If you need to keep outputs, store them outside the repo or remove the ignore rules intentionally.
-
-## Notes
-
-- This repo is research-oriented; scripts are configured in-code rather than via CLI flags.
-- Model lists and parameters should be edited in the corresponding `main.py` files.
-- Many results are large; keep them out of git unless you are using Git LFS deliberately.
+> **Note:** `results/` and `data/` are intentionally excluded from git. Store outputs outside the repo or remove the ignore rules deliberately if you need to track them.
 
 ## License
 
-See `LICENSE`.
+MIT — see [LICENSE](LICENSE)
