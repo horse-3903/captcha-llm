@@ -632,7 +632,7 @@
         "  _   _  ___  ____  ____  _____\n | | | |/ _ \\|  _ \\/ ___|| ____|\n | |_| | | | | |_) \\___ \\|  _|\n |  _  | |_| |  _ < ___) | |___\n |_| |_|\\___/|_| \\_\\____/|_____|\n";
       return;
     }
-    figlet.defaults({ fontPath: "https://cdn.jsdelivr.net/npm/figlet@1.8.0/fonts/" });
+    figlet.defaults({ fontPath: "figlet-fonts/" });
     figlet.text("HORSE", { font: "Doom" }, function(err, text) {
       if (!err && text) document.getElementById("ascii-example").textContent = text;
     });
