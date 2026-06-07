@@ -1,0 +1,28 @@
+# Model lists used in paper experiments
+# All models accessed via OpenRouter (https://openrouter.ai)
+
+# Multimodal models evaluated on ASCII CAPTCHA (image-input mode)
+ascii_image_models:
+  - google/gemini-2.5-pro
+  - google/gemini-3-flash-preview
+  - openai/gpt-5-chat-latest
+  - anthropic/claude-sonnet-4.5
+  - anthropic/claude-sonnet-4
+  - anthropic/claude-haiku-4.5
+  - meta-llama/llama-4-maverick
+  - meta-llama/llama-4-scout
+  - qwen/qwen3-vl-235b-a22b-instruct
+  - qwen/qwen3-vl-30b-a3b-instruct
+  - qwen/qwen3-vl-8b-instruct
+
+# Text-only models evaluated on ASCII CAPTCHA (text-input mode)
+ascii_text_models:
+  - deepseek/deepseek-chat-v3-0324
+  - deepseek/deepseek-chat-v3.1
+  - deepseek/deepseek-r1-0528
+
+# Audio-capable models evaluated on audio CAPTCHA
+audio_models:
+  - google/gemini-3-flash-preview
+  - openai/gpt-audio-mini
+  - mistralai/voxtral-small-24b-2507

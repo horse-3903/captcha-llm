@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: "Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs"
+message: "If you use this software, please cite it using the metadata below."
+type: software
+authors:
+  - family-names: Chong
+    given-names: Choon-Hou Rafael
+    affiliation: "Hwa Chong Institution, Singapore"
+repository-code: "https://github.com/horse-3903/captcha-llm"
+url: "https://arxiv.org/abs/2604.03612"
+abstract: >
+  Research code for evaluating ASCII-art and overlapping-audio CAPTCHA tasks
+  against frontier multimodal LLMs. Accompanies the arXiv paper
+  "Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs".
+keywords:
+  - CAPTCHA
+  - multimodal LLM
+  - ASCII art
+  - audio augmentation
+  - cocktail party effect
+  - AI security
+  - benchmarking
+license: MIT
+year: 2026
+identifiers:
+  - type: url
+    value: "https://arxiv.org/abs/2604.03612"
+    description: arXiv preprint
+preferred-citation:
+  type: article
+  title: "Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs"
+  authors:
+    - family-names: Chong
+      given-names: Choon-Hou Rafael
+      affiliation: "Hwa Chong Institution, Singapore"
+  year: 2026
+  url: "https://arxiv.org/abs/2604.03612"
+  notes: "arXiv:2604.03612"

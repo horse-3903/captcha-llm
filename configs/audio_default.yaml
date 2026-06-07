@@ -1,0 +1,28 @@
+# Default parameters for audio CAPTCHA evaluation
+# Used by src/audio-captcha/main.py
+
+csv_path: "data/audio-captcha/extended.csv"
+background_file: "data/audio-captcha/bg-24k.wav"
+result_path: "results/audio-final-2"
+
+# Number of audio samples per model per mode (null = all)
+sample_limit: 100
+
+# Async concurrency limit
+concurrency_limit: 100
+
+# Gaussian noise intensity (signal-to-noise ratio scale)
+gaussian_level: 1.70
+
+# Background noise volume multiplier (1.0 = same volume as target)
+background_boost: 5.0
+
+# Mixing ratios for combined (overlapping speech) mode
+combined_ratios: [0.7, 0.7]
+
+# Noise modes to evaluate (all four are run sequentially)
+modes:
+  - none
+  - background
+  - combined
+  - gaussian

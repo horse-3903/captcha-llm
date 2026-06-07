@@ -178,3 +178,6 @@ results/
 ollama/**/results/
 *.whl
 *.zip
+
+# pytest / coverage cache
+.pytest_cache/

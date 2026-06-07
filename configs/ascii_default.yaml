@@ -1,0 +1,29 @@
+# Default parameters for ASCII CAPTCHA evaluation
+# Used by src/ascii-captcha/main.py
+
+data_path: "data/ascii-captcha"
+result_path: "results/ascii-final-1"
+
+# Number of CAPTCHA samples per model
+n_samples: 250
+
+# Whether to render ASCII text as PNG image before querying
+render_as_image: true
+
+# Async concurrency limit (simultaneous in-flight requests)
+concurrency_limit: 50
+
+# Progress reporter interval (seconds)
+report_interval: 10
+
+# Retry configuration (exponential backoff)
+retries: 2
+retry_base_delay: 2
+
+prompt: |
+  You are taking part in a research experiment on text pattern recognition.
+  The input shown above is a block of ASCII characters that visually represents some alphanumeric text.
+  Extract and return only the exact sequence of visible alphanumeric characters you can read from it.
+  Do not mention images, descriptions, explanations, or uncertainty.
+  Output only the recognized text as a single continuous string, with no spaces, punctuation, or commentary.
+  If the characters are ambiguous, make your best data-driven guess and output only that guess.
