@@ -114,7 +114,20 @@
       border-radius: 8px;
       overflow: hidden;
     }
-    .failure-card img { display: block; width: 100%; }
+    .failure-card .img-wrap {
+      background: #1a1a1a;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .failure-card .img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
     .failure-card-body {
       padding: 0.75rem 1rem;
       background: #fafafa;
@@ -330,7 +343,7 @@
     <div class="columns is-multiline">
       <div class="column is-one-third">
         <div class="failure-card">
-          <img src="assets/chatgpt_ascii_failed.png" alt="GPT-4o failure" />
+          <div class="img-wrap"><img src="assets/chatgpt_ascii_failed.png" alt="GPT-4o failure" /></div>
           <div class="failure-card-body">
             <span class="failure-model-tag">GPT-4o</span>
             <p class="failure-caption">Outputs a confident but entirely incorrect transcription.</p>
@@ -339,7 +352,7 @@
       </div>
       <div class="column is-one-third">
         <div class="failure-card">
-          <img src="assets/gemini_ascii_failed.png" alt="Gemini 1.5 Pro failure" />
+          <div class="img-wrap"><img src="assets/gemini_ascii_failed.png" alt="Gemini 1.5 Pro failure" /></div>
           <div class="failure-card-body">
             <span class="failure-model-tag">Gemini 1.5 Pro</span>
             <p class="failure-caption">Recognises ASCII art structure but cannot decode the characters.</p>
@@ -348,7 +361,7 @@
       </div>
       <div class="column is-one-third">
         <div class="failure-card">
-          <img src="assets/gemini_flash_ascii_failed.png" alt="Gemini 1.5 Flash failure" />
+          <div class="img-wrap"><img src="assets/gemini_flash_ascii_failed.png" alt="Gemini 1.5 Flash failure" /></div>
           <div class="failure-card-body">
             <span class="failure-model-tag">Gemini 1.5 Flash</span>
             <p class="failure-caption">Flash variant shows identical failure patterns to the Pro model.</p>
