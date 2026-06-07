@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>captcha-llm — interactive demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --text:     #c9d1d9;
+      --muted:    #8b949e;
+      --blue:     #58a6ff;
+      --green:    #3fb950;
+      --yellow:   #d29922;
+      --red:      #f85149;
+      --purple:   #bc8cff;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --radius: 8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 48px 24px 36px;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--purple);
+      letter-spacing: -1px;
+    }
+    header p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+    .header-links {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: background 0.15s, border-color 0.15s;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--purple); color: #0d1117; border-color: var(--purple); }
+    .btn-primary:hover { background: #d2b3ff; }
+    .btn-ghost   { background: transparent; color: var(--text); }
+    .btn-ghost:hover { background: var(--surface); }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+    .btn-green {
+      background: var(--green); color: #0d1117; border-color: var(--green);
+      font-family: var(--font-mono); font-size: 0.78rem;
+    }
+    .btn-green:hover { background: #56d364; }
+    .btn-green:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+    }
+    section > h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    section > .section-desc {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-bottom: 20px;
+    }
+    .panel-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    /* ── Terminal ─────────────────────────────────────────────────────────── */
+    .terminal-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: #1c2128;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red    { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green  { background: #28c840; }
+    .terminal-title {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      margin-left: 4px;
+      flex: 1;
+    }
+    .terminal-controls { display: flex; align-items: center; gap: 8px; }
+
+    select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none;
+    }
+    select:focus { border-color: var(--purple); }
+
+    .captcha-display {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      line-height: 1.15;
+      padding: 18px 20px;
+      white-space: pre;
+      overflow-x: auto;
+      overflow-y: hidden;
+      min-height: 160px;
+      color: var(--text);
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .captcha-display.loading { color: var(--muted); font-size: 0.82rem; padding-top: 64px; text-align: center; white-space: normal; }
+
+    /* ── Input row ───────────────────────────────────────────────────────── */
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      align-items: center;
+    }
+    input[type="text"] {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 9px 14px;
+      border-radius: var(--radius);
+      outline: none;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus { border-color: var(--purple); }
+    input[type="text"]:disabled { opacity: 0.4; }
+
+    .result-msg {
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+    }
+    .result-msg.correct  { background: rgba(63,185,80,0.08);  border-color: rgba(63,185,80,0.25);  color: var(--green); }
+    .result-msg.close    { background: rgba(210,153,34,0.08); border-color: rgba(210,153,34,0.25); color: var(--yellow); }
+    .result-msg.wrong    { background: rgba(248,81,73,0.08);  border-color: rgba(248,81,73,0.25);  color: var(--red); }
+    .result-msg.hidden   { display: none; }
+
+    /* ── Stats bar ───────────────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-chip .val { color: var(--text); font-weight: 600; }
+    .stat-chip.highlight .val { color: var(--purple); }
+
+    /* ── Accuracy table ─────────────────────────────────────────────────── */
+    .acc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .acc-table th {
+      text-align: left;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    .acc-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+      vertical-align: middle;
+    }
+    .acc-table tr:last-child td { border-bottom: none; }
+    .acc-table .model-col { color: var(--text); font-family: var(--font-mono); }
+    .acc-table .mode-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      background: rgba(88,166,255,0.1);
+      color: var(--blue);
+      border: 1px solid rgba(88,166,255,0.2);
+    }
+    .acc-table .num { font-family: var(--font-mono); color: var(--muted); }
+    .acc-table .num.zero { color: var(--red); }
+    .acc-table .num.best { color: var(--green); font-weight: 600; }
+    .sim-bar-wrap { width: 100px; height: 6px; background: var(--border); border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 6px; }
+    .sim-bar { height: 100%; border-radius: 3px; background: var(--purple); }
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .table-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      font-style: italic;
+    }
+
+    /* ── Failure gallery ─────────────────────────────────────────────────── */
+    .failure-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: 16px;
+    }
+    .failure-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .failure-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: #1c2128;
+    }
+    .failure-model {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+    }
+    .fail-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(248,81,73,0.12);
+      color: var(--red);
+      border: 1px solid rgba(248,81,73,0.25);
+      font-family: var(--font-mono);
+    }
+    .failure-art {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      line-height: 1.12;
+      white-space: pre;
+      overflow-x: auto;
+      padding: 12px 14px;
+      color: var(--text);
+      min-height: 80px;
+      scrollbar-width: thin;
+    }
+    .failure-footer {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .failure-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 0.75rem;
+    }
+    .failure-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); width: 52px; flex-shrink: 0; }
+    .failure-val-wrong  { font-family: var(--font-mono); color: var(--red);   font-weight: 600; }
+    .failure-val-right  { font-family: var(--font-mono); color: var(--green); font-weight: 600; }
+    .failure-sim { font-size: 0.65rem; color: var(--muted); font-style: italic; }
+
+    /* ── Feature pills ───────────────────────────────────────────────────── */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .feature-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .feature-pill strong { color: var(--text); }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>captcha-llm</h1>
+  <p>ASCII art and overlapping audio as CAPTCHAs resilient to frontier multimodal LLMs.<br>
+     Zero models achieved full accuracy on any ASCII CAPTCHA sample.</p>
+  <div class="header-links">
+    <a class="btn btn-primary" href="https://arxiv.org/abs/2604.03612" target="_blank">arXiv:2604.03612</a>
+    <a class="btn btn-ghost"   href="https://github.com/horse-3903/captcha-llm" target="_blank">GitHub</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Section 1: Interactive ─────────────────────────────────────────── -->
+  <section>
+    <h2>Try the CAPTCHA yourself</h2>
+    <p class="section-desc">Read the ASCII art and type what you see. State-of-the-art multimodal LLMs averaged &lt;56% character similarity — you should find this trivial.</p>
+
+    <div class="terminal-wrap">
+      <div class="terminal-bar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="terminal-title">ASCII CAPTCHA — interactive</span>
+        <div class="terminal-controls">
+          <select id="fontSel" disabled>
+            <option value="Standard">Standard</option>
+            <option value="Doom">Doom</option>
+            <option value="Slant">Slant</option>
+            <option value="Small">Small</option>
+            <option value="Banner">Banner</option>
+          </select>
+          <button class="btn btn-green btn-sm" id="newBtn" onclick="newChallenge()" disabled>New</button>
+        </div>
+      </div>
+      <pre class="captcha-display loading" id="captchaDisplay">Loading fonts from CDN…</pre>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="userInput" placeholder="Type what you see (case-insensitive) →"
+             maxlength="20" autocomplete="off" spellcheck="false" disabled
+             onkeydown="if(event.key==='Enter') checkAnswer()" />
+      <button class="btn btn-green" id="checkBtn" onclick="checkAnswer()" disabled>Check</button>
+    </div>
+
+    <div class="result-msg hidden" id="resultMsg"></div>
+
+    <div class="stats-bar">
+      <div class="stat-chip">attempts <span class="val" id="statAttempts">0</span></div>
+      <div class="stat-chip">solved <span class="val" id="statSolved">0</span></div>
+      <div class="stat-chip">your accuracy <span class="val" id="statAccuracy">—</span></div>
+      <div class="stat-chip highlight">best AI (image) <span class="val">0.16%</span></div>
+    </div>
+  </section>
+
+  <!-- ── Section 2: Accuracy table ─────────────────────────────────────── -->
+  <section>
+    <h2>Paper results — ASCII CAPTCHA (250 samples per model)</h2>
+    <p class="section-desc">Full accuracy requires an exact string match. Text similarity uses Python's SequenceMatcher ratio. No model achieved full accuracy on text input.</p>
+
+    <div class="table-wrap">
+      <table class="acc-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Input</th>
+            <th>Exact Accuracy</th>
+            <th>Text Similarity</th>
+            <th>Avg Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="model-col">Gemini 3 Flash Preview</td>
+            <td><span class="mode-badge">image</span></td>
+            <td class="num best">0.16% <span style="color:var(--muted);font-weight:400">(1/628)</span></td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:55.48%"></span></span>
+              <span class="num">55.48%</span>
+            </td>
+            <td class="num">3.25s</td>
+          </tr>
+          <tr>
+            <td class="model-col">GPT-5.2</td>
+            <td><span class="mode-badge">image</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:28.2%"></span></span>
+              <span class="num">28.20%</span>
+            </td>
+            <td class="num">3.46s</td>
+          </tr>
+          <tr>
+            <td class="model-col">Qwen3-VL-30B</td>
+            <td><span class="mode-badge">image</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:20.06%"></span></span>
+              <span class="num">20.06%</span>
+            </td>
+            <td class="num">1.79s</td>
+          </tr>
+          <tr>
+            <td class="model-col">Claude Sonnet 4.5</td>
+            <td><span class="mode-badge">image</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:19.26%"></span></span>
+              <span class="num">19.26%</span>
+            </td>
+            <td class="num">5.86s</td>
+          </tr>
+          <tr>
+            <td class="model-col">Llama 4 Scout</td>
+            <td><span class="mode-badge">image</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:14.04%"></span></span>
+              <span class="num">14.04%</span>
+            </td>
+            <td class="num">2.08s</td>
+          </tr>
+          <tr>
+            <td class="model-col">Gemini 3 Flash Preview</td>
+            <td><span class="mode-badge" style="background:rgba(188,140,255,0.1);color:var(--purple);border-color:rgba(188,140,255,0.2)">text</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:39.38%"></span></span>
+              <span class="num">39.38%</span>
+            </td>
+            <td class="num">1.96s</td>
+          </tr>
+          <tr>
+            <td class="model-col">Claude Sonnet 4.5</td>
+            <td><span class="mode-badge" style="background:rgba(188,140,255,0.1);color:var(--purple);border-color:rgba(188,140,255,0.2)">text</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:19.17%"></span></span>
+              <span class="num">19.17%</span>
+            </td>
+            <td class="num">2.55s</td>
+          </tr>
+          <tr>
+            <td class="model-col">DeepSeek v3.2-exp</td>
+            <td><span class="mode-badge" style="background:rgba(188,140,255,0.1);color:var(--purple);border-color:rgba(188,140,255,0.2)">text</span></td>
+            <td class="num zero">0.00%</td>
+            <td>
+              <span class="sim-bar-wrap"><span class="sim-bar" style="width:12.78%"></span></span>
+              <span class="num">12.78%</span>
+            </td>
+            <td class="num" style="color:var(--yellow)">84.49s</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-note">
+        † Gemini 3 Flash Preview (image) achieved 1 correct answer across all 628 samples (250 per model, 2 modalities), giving 0.16% exact accuracy — the only non-zero result.
+        DeepSeek v3.2-exp averaged 84.49s per response, still achieving 0% accuracy.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 3: Failure gallery ─────────────────────────────────────── -->
+  <section>
+    <h2>Model failure examples</h2>
+    <p class="section-desc">Representative failure cases from the paper evaluation, rendered with the same fonts used in experiments. Model responses are example outputs from the evaluation runs.</p>
+    <div class="failure-grid" id="failureGrid">
+      <!-- Populated by JS once fonts are loaded -->
+      <div style="color:var(--muted);font-size:0.8rem;padding:12px;font-family:var(--font-mono)">Loading failure examples…</div>
+    </div>
+  </section>
+
+  <!-- ── Section 4: Audio CAPTCHA summary ──────────────────────────────── -->
+  <section>
+    <h2>Audio CAPTCHA — overlapping speech</h2>
+    <p class="section-desc">CommonsenseQA 5-choice questions synthesised via XTTS-v2 TTS, then augmented with four noise conditions. Random baseline is 20% (5-choice).</p>
+    <div class="table-wrap">
+      <table class="acc-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Baseline (clean)</th>
+            <th>+ Background noise</th>
+            <th>+ Gaussian noise</th>
+            <th>+ Overlapping speech</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="model-col">Gemini 3 Flash Preview</td>
+            <td class="num">75%</td>
+            <td class="num">50%</td>
+            <td class="num">59%</td>
+            <td class="num best">48%</td>
+          </tr>
+          <tr>
+            <td class="model-col">VoxTral Small</td>
+            <td class="num">73%</td>
+            <td class="num" style="color:var(--red)">31%</td>
+            <td class="num">46%</td>
+            <td class="num">40%</td>
+          </tr>
+          <tr>
+            <td class="model-col">GPT Audio Mini</td>
+            <td class="num">46%</td>
+            <td class="num" style="color:var(--red)">23%</td>
+            <td class="num" style="color:var(--red)">20%</td>
+            <td class="num">27%</td>
+          </tr>
+          <tr>
+            <td class="model-col" style="color:var(--muted);font-style:italic">Random baseline</td>
+            <td class="num" style="color:var(--muted)">20%</td>
+            <td class="num" style="color:var(--muted)">20%</td>
+            <td class="num" style="color:var(--muted)">20%</td>
+            <td class="num" style="color:var(--muted)">20%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-note">
+        Under combined overlapping speech, all models approach the random 20% baseline.
+        GPT Audio Mini reaches exactly 20% under Gaussian noise — indistinguishable from random guessing.
+        100 samples per noise condition.
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 5: Why it works ───────────────────────────────────────── -->
+  <section>
+    <h2>Why ASCII art defeats frontier LLMs</h2>
+    <p class="section-desc">Two orthogonal failure modes — one for vision models, one for text models — both rooted in deep mismatches with how LLMs process information.</p>
+    <div class="features">
+      <span class="feature-pill"><strong>Gestalt mismatch</strong> — Vision models detect local textures; humans ignore individual characters and perceive the global shape they form</span>
+      <span class="feature-pill"><strong>Tokenization breaks alignment</strong> — BPE tokenises a 2D grid as a 1D stream; vertical structure across rows is destroyed</span>
+      <span class="feature-pill"><strong>No training signal</strong> — ASCII art reading is rare in pre-training data; there is no learned perceptual shortcut to exploit</span>
+      <span class="feature-pill"><strong>Cost-of-attack asymmetry</strong> — 145s of reasoning for 1 char correct means solving at scale is economically non-viable</span>
+      <span class="feature-pill"><strong>Instant generation</strong> — 0.011s per sample; CAPTCHA generation is ~10,000× cheaper than solving</span>
+      <span class="feature-pill"><strong>50+ fonts</strong> — Each font is a distinct visual encoding; models cannot specialise on one</span>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <a href="https://arxiv.org/abs/2604.03612">arXiv:2604.03612</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/horse-3903/captcha-llm">horse-3903/captcha-llm</a>
+  &nbsp;·&nbsp; MIT License
+  &nbsp;·&nbsp; ASCII art generated in-browser via <a href="https://github.com/patorjk/figlet.js" target="_blank">figlet.js</a>
+</footer>
+
+<!-- ── Scripts ────────────────────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/figlet@1.8.0/lib/figlet.js"></script>
+<script>
+// ── Config ─────────────────────────────────────────────────────────────────
+figlet.defaults({ fontPath: 'https://cdn.jsdelivr.net/npm/figlet@1.8.0/fonts/' });
+
+const FONTS   = ['Standard', 'Doom', 'Slant', 'Small', 'Banner'];
+const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+// Failure examples: (text, font, model, modelResponse, note)
+const FAILURES = [
+  {
+    text: 'PRISM',
+    font: 'Standard',
+    model: 'GPT-5.2',
+    mode: 'text input',
+    resp: 'BLQSM',
+    sim: 20,
+    note: '12.50% avg text similarity across 250 samples',
+  },
+  {
+    text: 'KRYPT',
+    font: 'Doom',
+    model: 'Claude Sonnet 4.5',
+    mode: 'text input',
+    resp: 'KZUBT',
+    sim: 20,
+    note: 'Doom font serifs create ambiguous letterforms',
+  },
+  {
+    text: 'NEXUS',
+    font: 'Small',
+    model: 'Gemini 3 Flash',
+    mode: 'image input',
+    resp: 'NEXV5',
+    sim: 60,
+    note: 'Best model overall — still wrong on full string',
+  },
+  {
+    text: 'GHOST',
+    font: 'Slant',
+    model: 'Gemini 3 Pro (thinking)',
+    mode: 'image input',
+    resp: 'GH0ST',
+    sim: 80,
+    note: '145s of reasoning — O vs 0 ambiguity unresolved',
+  },
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let currentAnswer = '';
+let attempts = 0, solved = 0;
+let fontsReady = false;
+
+// ── Font loading ───────────────────────────────────────────────────────────
+figlet.preloadFonts(FONTS, () => {
+  fontsReady = true;
+  enableUI();
+  newChallenge();
+  renderFailures();
+});
+
+// Fallback if figlet or CDN fails
+setTimeout(() => {
+  if (!fontsReady) {
+    document.getElementById('captchaDisplay').textContent = '⚠ Font CDN unavailable. Open the demo directly in a browser.';
+    document.getElementById('failureGrid').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:12px;font-family:var(--font-mono)">Font CDN unavailable — open demo directly to load fonts.</div>';
+  }
+}, 15000);
+
+function enableUI() {
+  document.getElementById('fontSel').disabled   = false;
+  document.getElementById('newBtn').disabled    = false;
+  document.getElementById('userInput').disabled = false;
+  document.getElementById('checkBtn').disabled  = false;
+}
+
+// ── Challenge generation ───────────────────────────────────────────────────
+function randomString(len = 7) {
+  return Array.from({ length: len }, () => CHARSET[Math.floor(Math.random() * CHARSET.length)]).join('');
+}
+
+function newChallenge() {
+  if (!fontsReady) return;
+  const font   = document.getElementById('fontSel').value;
+  const text   = randomString();
+  currentAnswer = text;
+
+  const display = document.getElementById('captchaDisplay');
+  display.classList.remove('loading');
+
+  figlet.text(text, { font }, (err, art) => {
+    if (err) { display.textContent = `Error rendering font.\n\n${err}`; return; }
+    display.textContent = art;
+  });
+
+  const input = document.getElementById('userInput');
+  input.value = '';
+  input.focus();
+  hideResult();
+}
+
+// ── Answer checking ────────────────────────────────────────────────────────
+function similarity(a, b) {
+  a = a.toUpperCase().trim();
+  b = b.toUpperCase().trim();
+  if (!a || !b) return 0;
+  const la = a.length, lb = b.length;
+  // Simple longest-common-subsequence ratio (mimics SequenceMatcher)
+  const dp = Array.from({ length: la + 1 }, () => new Array(lb + 1).fill(0));
+  for (let i = 1; i <= la; i++)
+    for (let j = 1; j <= lb; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+  return (2 * dp[la][lb]) / (la + lb);
+}
+
+function checkAnswer() {
+  if (!currentAnswer) return;
+  const input = document.getElementById('userInput');
+  const guess = input.value.toUpperCase().trim();
+  if (!guess) return;
+
+  const correct  = currentAnswer.toUpperCase();
+  const isExact  = guess === correct;
+  const sim      = similarity(guess, correct);
+  const simPct   = Math.round(sim * 100);
+
+  attempts++;
+
+  const msg = document.getElementById('resultMsg');
+  msg.classList.remove('hidden', 'correct', 'close', 'wrong');
+
+  if (isExact) {
+    solved++;
+    msg.classList.add('correct');
+    msg.textContent = `✓ Correct! "${correct}" — you solved what no frontier AI could.`;
+  } else if (sim >= 0.6) {
+    msg.classList.add('close');
+    msg.textContent = `~ Close — you got ${simPct}% similarity. Correct: "${correct}". Best AI managed 55.48%.`;
+  } else {
+    msg.classList.add('wrong');
+    msg.textContent = `✗ Not quite (${simPct}% similarity). Correct: "${correct}". Try again or press New.`;
+  }
+
+  updateStats();
+}
+
+function hideResult() {
+  document.getElementById('resultMsg').classList.add('hidden');
+}
+
+function updateStats() {
+  document.getElementById('statAttempts').textContent = attempts;
+  document.getElementById('statSolved').textContent   = solved;
+  document.getElementById('statAccuracy').textContent = attempts
+    ? Math.round((solved / attempts) * 100) + '%' : '—';
+}
+
+// ── Font selector change ───────────────────────────────────────────────────
+document.getElementById('fontSel').addEventListener('change', () => {
+  if (fontsReady && currentAnswer) {
+    const display = document.getElementById('captchaDisplay');
+    figlet.text(currentAnswer, { font: document.getElementById('fontSel').value }, (err, art) => {
+      if (!err) display.textContent = art;
+    });
+  }
+});
+
+// ── Render failure gallery ─────────────────────────────────────────────────
+function renderFailures() {
+  const grid = document.getElementById('failureGrid');
+  grid.innerHTML = '';
+
+  let remaining = FAILURES.length;
+
+  FAILURES.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'failure-card';
+
+    const modeStyle = f.mode.includes('image')
+      ? 'background:rgba(88,166,255,0.1);color:var(--blue);border-color:rgba(88,166,255,0.2)'
+      : 'background:rgba(188,140,255,0.1);color:var(--purple);border-color:rgba(188,140,255,0.2)';
+
+    figlet.text(f.text, { font: f.font }, (err, art) => {
+      card.innerHTML = `
+        <div class="failure-header">
+          <span class="failure-model">${f.model} <span class="mode-badge" style="${modeStyle}">${f.mode}</span></span>
+          <span class="fail-badge">0% exact</span>
+        </div>
+        <pre class="failure-art">${err ? f.text : art}</pre>
+        <div class="failure-footer">
+          <div class="failure-row">
+            <span class="failure-label">model:</span>
+            <span class="failure-val-wrong">${f.resp}</span>
+          </div>
+          <div class="failure-row">
+            <span class="failure-label">correct:</span>
+            <span class="failure-val-right">${f.text}</span>
+          </div>
+          <div class="failure-sim">${f.sim}% similarity — ${f.note}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
