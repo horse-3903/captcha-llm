@@ -277,7 +277,7 @@
             We introduce two novel CAPTCHA classes targeting distinct perceptual gaps. First, <strong>ASCII art CAPTCHAs</strong> exploit the mismatch between holistic human Gestalt reading and LLM tokenisation: humans effortlessly recognise characters rendered in ASCII art, while models fail because their tokenisers fragment the spatial patterns that carry semantic meaning. Second, <strong>overlapping audio CAPTCHAs</strong> exploit the cocktail-party effect: humans can isolate target speech from simultaneous distractors, whereas current audio-capable LLMs cannot reliably separate overlapping speakers.
           </p>
           <p>
-            We evaluate both CAPTCHA classes against all frontier multimodal models available at the time of writing, including GPT-4o, GPT-4o Audio Mini, Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet, and VoxTral Small. For ASCII CAPTCHAs, <strong>no model achieved a non-zero exact-match accuracy</strong> under any input modality (text or image); character-level similarity across all models averaged 0.16%. For audio CAPTCHAs, all models performed near-randomly across four noise augmentation conditions, with the best result being 25% on clean audio (GPT-4o Audio Mini) — matching the random baseline for a 4-alternative forced-choice task. These results suggest that both CAPTCHA classes offer strong near-term robustness against current AI capabilities.
+            We evaluate both CAPTCHA classes against all frontier multimodal models available at the time of writing, including GPT-4o, GPT-4o Audio Mini, Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet, and VoxTral Small. For ASCII CAPTCHAs, <strong>no model achieved a non-zero exact-match accuracy</strong> under any input modality (text or image); character-level similarity across all models averaged 0.16%. For audio CAPTCHAs, all models performed near-randomly across four noise augmentation conditions, with the best result being 25% on clean audio (GPT-4o Audio Mini), matching the random baseline for a 4-alternative forced-choice task. These results suggest that both CAPTCHA classes offer strong near-term robustness against current AI capabilities.
           </p>
         </div>
       </div>
@@ -382,7 +382,7 @@
   <div class="container is-max-desktop">
     <h2 class="title is-3 section-heading has-text-centered">Results</h2>
 
-    <h3 class="title is-4 section-heading" style="margin-top:1.5rem;">ASCII CAPTCHAs — Text Input</h3>
+    <h3 class="title is-4 section-heading" style="margin-top:1.5rem;">ASCII CAPTCHAs: Text Input</h3>
     <div class="table-container">
       <table class="table is-bordered is-striped is-hoverable is-fullwidth results-table">
         <thead>
@@ -405,7 +405,7 @@
     </div>
     <p class="table-caption">Table 1. ASCII CAPTCHA results under text input. Char similarity is LCS-based, averaged over 500 samples.</p>
 
-    <h3 class="title is-4 section-heading" style="margin-top:2rem;">ASCII CAPTCHAs — Image Input</h3>
+    <h3 class="title is-4 section-heading" style="margin-top:2rem;">ASCII CAPTCHAs: Image Input</h3>
     <div class="table-container">
       <table class="table is-bordered is-striped is-hoverable is-fullwidth results-table">
         <thead>
@@ -428,7 +428,7 @@
     </div>
     <p class="table-caption">Table 2. ASCII CAPTCHA results under image input. No model achieved non-zero exact-match accuracy despite the visual modality.</p>
 
-    <h3 class="title is-4 section-heading" style="margin-top:2rem;">Audio CAPTCHAs — 4AFC Accuracy</h3>
+    <h3 class="title is-4 section-heading" style="margin-top:2rem;">Audio CAPTCHAs: 4AFC Accuracy</h3>
     <div class="table-container">
       <table class="table is-bordered is-striped is-hoverable is-fullwidth results-table">
         <thead>
@@ -461,11 +461,11 @@
     <h2 class="title is-3 section-heading has-text-centered">Related Links</h2>
     <div class="content has-text-justified">
       <ul>
-        <li><a href="https://arxiv.org/abs/2303.08774" target="_blank" rel="noopener">GPT-4 Technical Report</a> — multimodal capabilities of the model family evaluated in this work.</li>
-        <li><a href="https://arxiv.org/abs/2312.11805" target="_blank" rel="noopener">Gemini: A Family of Highly Capable Multimodal Models</a> — basis for the Gemini model family used in evaluation.</li>
-        <li><a href="https://captcha.com" target="_blank" rel="noopener">CAPTCHA overview</a> — background on the history and design of CAPTCHA systems.</li>
-        <li><a href="https://github.com/pwaller/pyfiglet" target="_blank" rel="noopener">pyfiglet</a> — Python implementation of FIGlet used for ASCII art generation.</li>
-        <li><a href="https://coqui.ai/blog/tts/open_xtts" target="_blank" rel="noopener">XTTS-v2</a> — TTS model used for audio CAPTCHA synthesis.</li>
+        <li><a href="https://arxiv.org/abs/2303.08774" target="_blank" rel="noopener">GPT-4 Technical Report</a>:multimodal capabilities of the model family evaluated in this work.</li>
+        <li><a href="https://arxiv.org/abs/2312.11805" target="_blank" rel="noopener">Gemini: A Family of Highly Capable Multimodal Models</a>:basis for the Gemini model family used in evaluation.</li>
+        <li><a href="https://captcha.com" target="_blank" rel="noopener">CAPTCHA overview</a>:background on the history and design of CAPTCHA systems.</li>
+        <li><a href="https://github.com/pwaller/pyfiglet" target="_blank" rel="noopener">pyfiglet</a>:Python implementation of FIGlet used for ASCII art generation.</li>
+        <li><a href="https://coqui.ai/blog/tts/open_xtts" target="_blank" rel="noopener">XTTS-v2</a>:TTS model used for audio CAPTCHA synthesis.</li>
       </ul>
     </div>
   </div>
