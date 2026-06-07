@@ -4,548 +4,436 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs</title>
-  <meta name="description" content="We introduce two CAPTCHA classes that exploit human perceptual advantages over frontier multimodal LLMs. No model solved a single ASCII CAPTCHA; all performed near-randomly on audio CAPTCHAs." />
+  <meta name="description" content="We introduce two CAPTCHA classes exploiting human perceptual advantages over frontier multimodal LLMs. No model solved a single ASCII CAPTCHA; all performed near-randomly on audio CAPTCHAs." />
   <meta property="og:title" content="Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs" />
-  <meta property="og:description" content="ASCII art and overlapping audio CAPTCHAs resilient to GPT-4o, Gemini, and Claude. Zero models achieved full accuracy on any ASCII CAPTCHA sample." />
+  <meta property="og:description" content="ASCII art and overlapping audio CAPTCHAs resilient to GPT-4o, Gemini, and Claude." />
   <meta property="og:image" content="assets/example_captcha.png" />
   <meta property="og:type" content="article" />
+
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Noto Sans", sans-serif; }
 
-    :root {
-      --bg: #ffffff;
-      --bg-alt: #f8f9fa;
-      --border: #e5e7eb;
-      --text: #111827;
-      --text-muted: #6b7280;
-      --text-light: #9ca3af;
-      --accent: #2563eb;
-      --accent-light: #eff6ff;
-      --accent-border: #bfdbfe;
-      --red: #dc2626;
-      --green: #16a34a;
-      --mono: "IBM Plex Mono", monospace;
+    .publication-title {
+      font-family: "Google Sans", sans-serif;
+      font-weight: 700;
     }
+    .publication-authors {
+      font-family: "Google Sans", sans-serif;
+    }
+    .publication-authors a { color: #363636; }
+    .publication-authors a:hover { color: #4a90d9; }
 
-    body {
-      font-family: "Inter", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      font-size: 16px;
+    .link-block a {
+      margin-top: 5px;
+      margin-bottom: 5px;
     }
 
-    /* ── Layout ── */
-    .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
-    .container-wide { max-width: 1060px; margin: 0 auto; padding: 0 1.5rem; }
-
-    /* ── Header ── */
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 0.75rem 0;
-      position: sticky; top: 0; background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(8px); z-index: 100;
-    }
-    .header-inner {
-      max-width: 860px; margin: 0 auto; padding: 0 1.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .header-title { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
-    .header-links { display: flex; gap: 1.25rem; }
-    .header-links a {
-      font-size: 0.8rem; color: var(--text-muted); text-decoration: none;
-      transition: color 0.15s;
-    }
-    .header-links a:hover { color: var(--accent); }
-
-    /* ── Hero ── */
-    .hero {
-      padding: 4rem 0 2.5rem;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-    .venue-tag {
-      display: inline-block;
-      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
-      background: var(--accent-light); color: var(--accent);
-      border: 1px solid var(--accent-border); border-radius: 4px;
-      padding: 0.25rem 0.75rem; margin-bottom: 1.25rem;
-    }
-    h1 {
-      font-size: clamp(1.5rem, 4vw, 2.25rem);
-      font-weight: 700; line-height: 1.25;
-      color: var(--text); margin-bottom: 1.5rem;
-      max-width: 700px; margin-left: auto; margin-right: auto;
-    }
-    .authors {
-      font-size: 1rem; color: var(--text-muted); margin-bottom: 0.4rem;
-    }
-    .authors a { color: var(--accent); text-decoration: none; font-weight: 500; }
-    .authors a:hover { text-decoration: underline; }
-    .affiliation {
-      font-size: 0.85rem; color: var(--text-light); margin-bottom: 2rem;
-    }
-    .action-buttons {
-      display: flex; flex-wrap: wrap; gap: 0.75rem;
-      justify-content: center; margin-bottom: 0;
-    }
-    .btn {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.55rem 1.2rem; border-radius: 6px;
-      font-size: 0.875rem; font-weight: 500;
-      text-decoration: none; transition: all 0.15s; cursor: pointer;
-      border: 1px solid transparent;
-    }
-    .btn-primary {
-      background: var(--text); color: var(--bg);
-    }
-    .btn-primary:hover { background: #1f2937; }
-    .btn-outline {
-      background: var(--bg); color: var(--text);
-      border-color: var(--border);
-    }
-    .btn-outline:hover { border-color: var(--text-muted); }
-    .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-    /* ── Section ── */
-    section { padding: 3rem 0; border-bottom: 1px solid var(--border); }
-    section:last-of-type { border-bottom: none; }
-    h2 {
-      font-size: 1.25rem; font-weight: 700;
-      margin-bottom: 1.25rem; color: var(--text);
-    }
-    h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.6rem; color: var(--text); }
-    p { margin-bottom: 1rem; color: #374151; line-height: 1.75; }
-    p:last-child { margin-bottom: 0; }
-
-    /* ── Abstract ── */
-    .abstract-box {
-      background: var(--bg-alt); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.5rem;
-      font-size: 0.95rem; line-height: 1.8; color: #374151;
+    .teaser .hero-body {
+      padding-top: 0;
+      padding-bottom: 3rem;
     }
 
-    /* ── TL;DR callout ── */
-    .tldr {
-      display: flex; gap: 1rem; align-items: flex-start;
-      background: var(--accent-light); border: 1px solid var(--accent-border);
-      border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem;
-    }
-    .tldr-label {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--accent);
-      white-space: nowrap; padding-top: 0.1rem; flex-shrink: 0;
-    }
-    .tldr p { font-size: 0.9rem; color: #1d4ed8; margin: 0; }
-
-    /* ── Key findings ── */
-    .findings-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1rem; margin-top: 1.25rem;
-    }
-    .finding-card {
-      background: var(--bg-alt); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.25rem;
-    }
-    .finding-number {
-      font-family: var(--mono); font-size: 1.6rem; font-weight: 500;
-      line-height: 1; margin-bottom: 0.5rem;
-    }
-    .finding-number.red { color: var(--red); }
-    .finding-number.green { color: var(--green); }
-    .finding-label { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
-
-    /* ── Method ── */
-    .method-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
-    @media (max-width: 600px) { .method-cols { grid-template-columns: 1fr; } }
-    .method-block {
-      background: var(--bg-alt); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.25rem;
-    }
-    .method-block h3 { font-size: 0.9rem; margin-bottom: 0.75rem; }
-    .method-block ul { padding-left: 1.25rem; }
-    .method-block li { font-size: 0.85rem; color: #374151; margin-bottom: 0.4rem; line-height: 1.6; }
-    .method-block li strong { color: var(--text); }
-    .tag {
-      display: inline-block; font-size: 0.65rem; font-weight: 600;
-      letter-spacing: 0.06em; text-transform: uppercase;
-      background: #f3f4f6; color: var(--text-muted);
-      border-radius: 4px; padding: 0.15rem 0.45rem; margin-bottom: 0.6rem;
+    .teaser-img {
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
 
-    /* ── ASCII demo ── */
-    .ascii-demo {
-      background: #18181b; border-radius: 10px;
-      padding: 1.25rem 1.5rem; margin: 1.5rem 0;
+    .section-heading {
+      font-family: "Google Sans", sans-serif;
+      font-weight: 700;
+    }
+
+    /* Abstract */
+    .abstract-content p {
+      font-size: 1rem;
+      line-height: 1.75;
+      text-align: justify;
+    }
+
+    /* Captcha art display */
+    .captcha-frame {
+      background: #1e1e2e;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
       overflow-x: auto;
     }
-    .ascii-demo pre {
-      font-family: var(--mono); font-size: 0.75rem;
-      line-height: 1.3; color: #e4e4e7;
-      white-space: pre; margin: 0;
+    .captcha-frame pre {
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      font-size: 0.68rem;
+      line-height: 1.2;
+      color: #cdd6f4;
+      white-space: pre;
+      margin: 0;
     }
-    .ascii-caption {
-      text-align: center; font-size: 0.78rem;
-      color: var(--text-light); margin-top: -0.5rem; margin-bottom: 1.5rem;
+    .captcha-label {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+      color: #6e7681;
+      margin-top: 0.5rem;
+      text-align: center;
     }
 
-    /* ── Results tables ── */
-    .table-wrapper { overflow-x: auto; margin: 1.25rem 0; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th {
-      background: var(--bg-alt); border: 1px solid var(--border);
-      padding: 0.55rem 0.75rem; text-align: left;
-      font-weight: 600; font-size: 0.8rem; color: var(--text);
+    /* Results tables */
+    .results-table th {
+      background: #f5f5f5;
+      font-size: 0.82rem;
+      text-align: center !important;
     }
-    td {
-      border: 1px solid var(--border);
-      padding: 0.5rem 0.75rem; color: #374151;
+    .results-table td {
+      text-align: center;
+      vertical-align: middle;
+      font-size: 0.875rem;
     }
-    tr:nth-child(even) td { background: var(--bg-alt); }
-    .num { font-family: var(--mono); font-size: 0.82rem; }
-    .cell-bad { color: var(--red); font-weight: 600; }
-    .cell-good { color: var(--green); font-weight: 600; }
-    .cell-na { color: var(--text-light); }
+    .results-table td.model-col {
+      text-align: left;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.8rem;
+    }
+    .num-bad  { color: #e03131; font-weight: 600; }
+    .num-rand { color: #868e96; }
     .table-caption {
-      font-size: 0.78rem; color: var(--text-muted);
-      margin-top: 0.5rem; margin-bottom: 2rem; line-height: 1.5;
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 0.5rem;
+      text-align: center;
+      font-style: italic;
     }
 
-    /* ── Figure ── */
-    .figure { margin: 1.75rem 0; }
-    .figure img {
-      width: 100%; border-radius: 8px;
-      border: 1px solid var(--border); display: block;
+    /* Failure gallery */
+    .failure-card {
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .figure-caption {
-      font-size: 0.78rem; color: var(--text-muted);
-      margin-top: 0.5rem; line-height: 1.5;
+    .failure-card img { display: block; width: 100%; }
+    .failure-card-body {
+      padding: 0.75rem 1rem;
+      background: #fafafa;
+      border-top: 1px solid #e8e8e8;
     }
+    .failure-model-tag {
+      display: inline-block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.68rem;
+      color: #6e7681;
+      margin-bottom: 0.25rem;
+    }
+    .failure-caption { font-size: 0.8rem; color: #444; line-height: 1.5; }
 
-    /* ── Failure gallery ── */
-    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.25rem; }
-    .gallery-item {
-      background: var(--bg-alt); border: 1px solid var(--border);
-      border-radius: 8px; overflow: hidden;
-    }
-    .gallery-item img { width: 100%; display: block; }
-    .gallery-item-caption {
-      padding: 0.6rem 0.75rem;
-      font-size: 0.72rem; color: var(--text-muted); line-height: 1.5;
-    }
-    .model-label {
-      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;
-      text-transform: uppercase; color: var(--text-light); display: block;
-      margin-bottom: 0.2rem;
-    }
-
-    /* ── BibTeX ── */
+    /* BibTeX */
     .bibtex-box {
-      background: #18181b; border-radius: 8px;
-      padding: 1.25rem 1.5rem; margin-top: 1.25rem;
+      background: #1e1e2e;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
       overflow-x: auto;
     }
     .bibtex-box pre {
-      font-family: var(--mono); font-size: 0.8rem;
-      line-height: 1.65; color: #e4e4e7; margin: 0;
+      font-family: "IBM Plex Mono", "Courier New", monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #cdd6f4;
       white-space: pre;
+      margin: 0;
     }
-    .copy-btn {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      font-size: 0.75rem; color: var(--text-muted);
-      background: var(--bg-alt); border: 1px solid var(--border);
-      border-radius: 5px; padding: 0.3rem 0.65rem;
-      cursor: pointer; transition: all 0.15s; margin-bottom: 0.75rem;
-    }
-    .copy-btn:hover { border-color: var(--text-muted); color: var(--text); }
 
-    /* ── Footer ── */
-    footer {
-      padding: 2rem 0; text-align: center;
-      font-size: 0.8rem; color: var(--text-light);
-      border-top: 1px solid var(--border);
-    }
-    footer a { color: var(--text-muted); text-decoration: none; }
-    footer a:hover { color: var(--accent); }
+    /* footer */
+    .footer { background: #f5f5f5; }
+    .footer .content { color: #777; font-size: 0.82rem; }
+    .footer a { color: #4a90d9; }
 
-    @media (max-width: 540px) {
-      .hero { padding: 2.5rem 0 2rem; }
-      h1 { font-size: 1.4rem; }
-      .action-buttons { flex-direction: column; align-items: center; }
-      .findings-grid { grid-template-columns: 1fr 1fr; }
+    /* figlet interactive */
+    .figlet-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .figlet-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .figlet-controls select {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
+      padding: 4px 8px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .figlet-controls label {
+      font-size: 0.8rem;
+      color: #555;
+    }
+    #figlet-status {
+      font-size: 0.75rem;
+      color: #999;
+      font-family: "IBM Plex Mono", monospace;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="header-inner">
-    <span class="header-title">Perceptual Gaps &mdash; arXiv 2026</span>
-    <nav class="header-links">
-      <a href="#abstract">Abstract</a>
-      <a href="#method">Method</a>
-      <a href="#results">Results</a>
-      <a href="#citation">Cite</a>
-    </nav>
+<!-- ── Hero / Title ──────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+
+          <h1 class="title is-1 publication-title">
+            Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs
+          </h1>
+
+          <div class="is-size-5 publication-authors" style="margin-top:1rem;">
+            <span class="author-block">
+              <a href="https://horse-3903.github.io" target="_blank" rel="noopener">Chong Choon-Hou Rafael</a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors" style="color:#555; margin-top:0.3rem;">
+            <span>Hwa Chong Institution, Singapore</span>
+          </div>
+
+          <div class="is-size-5 publication-authors" style="margin-top:0.5rem;">
+            <span class="tag is-warning is-light" style="font-size:0.85rem; font-weight:600;">arXiv &middot; April 2026</span>
+          </div>
+
+          <!-- Link buttons -->
+          <div class="column has-text-centered" style="margin-top:1.5rem;">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2604.03612" target="_blank" rel="noopener"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2604.03612" target="_blank" rel="noopener"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/horse-3903/captcha-llm" target="_blank" rel="noopener"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://horse-3903.github.io/showcase/captcha-llm" target="_blank" rel="noopener"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-globe"></i></span>
+                  <span>Demo</span>
+                </a>
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
-</header>
+</section>
 
-<div class="container">
-
-  <!-- Hero -->
-  <section class="hero" id="top" style="border-bottom: none; padding-bottom: 2.5rem;">
-    <div class="venue-tag">arXiv &middot; April 2026</div>
-    <h1>Perceptual Gaps: ASCII Art and Overlapping Audio as CAPTCHAs</h1>
-    <p class="authors">
-      <a href="https://horse-3903.github.io" target="_blank" rel="noopener">Chong Choon-Hou Rafael</a>
-    </p>
-    <p class="affiliation">Hwa Chong Institution, Singapore</p>
-    <div class="action-buttons">
-      <a href="https://arxiv.org/abs/2604.03612" target="_blank" rel="noopener" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Paper (arXiv)
-      </a>
-      <a href="https://arxiv.org/pdf/2604.03612" target="_blank" rel="noopener" class="btn btn-outline">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        PDF
-      </a>
-      <a href="https://github.com/horse-3903/captcha-llm" target="_blank" rel="noopener" class="btn btn-outline">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-        Code
-      </a>
-      <a href="https://horse-3903.github.io/showcase/captcha-llm" target="_blank" rel="noopener" class="btn btn-outline">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        Demo
-      </a>
+<!-- ── Teaser figure ─────────────────────────────────────────────────────── -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <figure class="image">
+        <img src="assets/example_captcha.png" alt="Example ASCII CAPTCHA sample" class="teaser-img" />
+      </figure>
+      <p class="has-text-centered" style="font-size:0.9rem; color:#555; margin-top:0.75rem; font-style:italic;">
+        An ASCII CAPTCHA from our dataset. Frontier LLMs consistently fail to decode such stimuli despite trivial human recognition.
+      </p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <div style="height:1px; background: var(--border); margin: 0;"></div>
-
-  <!-- TL;DR + Key Findings -->
-  <section id="findings" style="padding-top: 2.5rem;">
-    <div class="tldr">
-      <span class="tldr-label">TL;DR</span>
-      <p>We introduce CAPTCHAs that exploit human perceptual advantages: ASCII art (requiring Gestalt holistic reading) and overlapping speech (requiring the cocktail-party effect). No frontier model (GPT-4o, Gemini 1.5 Pro, Claude 3.5) solved a single ASCII CAPTCHA; all performed near-randomly on audio CAPTCHAs.</p>
-    </div>
-    <h2>Key Findings</h2>
-    <div class="findings-grid">
-      <div class="finding-card">
-        <div class="finding-number red">0%</div>
-        <div class="finding-label">Exact-match accuracy for any model on ASCII art CAPTCHAs (text &amp; image input)</div>
-      </div>
-      <div class="finding-card">
-        <div class="finding-number red">~25%</div>
-        <div class="finding-label">Best audio CAPTCHA accuracy (GPT-4o Audio Mini, clean), near random for a 4-option task</div>
-      </div>
-      <div class="finding-card">
-        <div class="finding-number red">0.16%</div>
-        <div class="finding-label">Average character-level similarity on ASCII CAPTCHAs across all models and conditions</div>
-      </div>
-      <div class="finding-card">
-        <div class="finding-number green">500</div>
-        <div class="finding-label">ASCII CAPTCHA samples evaluated across 50+ fonts, all 7 frontier models tested</div>
+<!-- ── Abstract ─────────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 section-heading">Abstract</h2>
+        <div class="content has-text-justified abstract-content">
+          <p>
+            The rapid improvement of frontier multimodal large language models (LLMs) has rendered most existing CAPTCHA schemes obsolete: image-based CAPTCHAs, audio CAPTCHAs, and textual puzzles are routinely solved by current AI systems. This paper investigates whether human-specialised perceptual abilities can form the basis of next-generation CAPTCHAs that remain robust against AI while staying accessible to humans.
+          </p>
+          <p>
+            We introduce two novel CAPTCHA classes targeting distinct perceptual gaps. First, <strong>ASCII art CAPTCHAs</strong> exploit the mismatch between holistic human Gestalt reading and LLM tokenisation: humans effortlessly recognise characters rendered in ASCII art, while models fail because their tokenisers fragment the spatial patterns that carry semantic meaning. Second, <strong>overlapping audio CAPTCHAs</strong> exploit the cocktail-party effect: humans can isolate target speech from simultaneous distractors, whereas current audio-capable LLMs cannot reliably separate overlapping speakers.
+          </p>
+          <p>
+            We evaluate both CAPTCHA classes against all frontier multimodal models available at the time of writing, including GPT-4o, GPT-4o Audio Mini, Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet, and VoxTral Small. For ASCII CAPTCHAs, <strong>no model achieved a non-zero exact-match accuracy</strong> under any input modality (text or image); character-level similarity across all models averaged 0.16%. For audio CAPTCHAs, all models performed near-randomly across four noise augmentation conditions, with the best result being 25% on clean audio (GPT-4o Audio Mini) — matching the random baseline for a 4-alternative forced-choice task. These results suggest that both CAPTCHA classes offer strong near-term robustness against current AI capabilities.
+          </p>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Abstract -->
-  <section id="abstract">
-    <h2>Abstract</h2>
-    <div class="abstract-box">
-      <p>The rapid improvement of frontier multimodal large language models (LLMs) has rendered most existing CAPTCHA schemes obsolete: image-based CAPTCHAs, audio CAPTCHAs, and textual puzzles are all routinely solved by current AI systems. This paper investigates whether human-specialised perceptual abilities can form the basis of next-generation CAPTCHAs that remain robust against AI while staying accessible to humans.</p>
-      <p>We introduce two novel CAPTCHA classes targeting distinct perceptual gaps. First, ASCII art CAPTCHAs exploit the mismatch between holistic human Gestalt reading and LLM tokenisation: humans effortlessly recognise characters rendered in ASCII art, while models fail because their tokenisers fragment the spatial patterns that carry semantic meaning. Second, overlapping audio CAPTCHAs exploit the cocktail-party effect: humans can isolate target speech from simultaneous distractors, whereas current audio-capable LLMs cannot reliably separate overlapping speakers.</p>
-      <p>We evaluate both CAPTCHA classes against all frontier multimodal models available at the time of writing, including GPT-4o, GPT-4o Audio Mini, Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet, and VoxTral Small. For ASCII CAPTCHAs, no model achieved a non-zero exact-match accuracy under any input modality (text or image); character-level similarity across all models averaged 0.16%. For audio CAPTCHAs, all models performed near-randomly across four noise augmentation conditions, with the best result being 25% accuracy on clean audio (GPT-4o Audio Mini). These results suggest that both CAPTCHA classes offer strong near-term robustness against current AI capabilities.</p>
+<hr style="margin:0;" />
+
+<!-- ── ASCII CAPTCHA ─────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 section-heading has-text-centered">ASCII Art CAPTCHAs</h2>
+    <div class="content">
+      <p>
+        ASCII art CAPTCHAs encode alphanumeric characters as spatial arrangements of printable symbols. Humans read ASCII art holistically, applying Gestalt principles to group local elements into global letter forms. LLM tokenisers, however, fragment ASCII art at character boundaries, destroying the spatial structure that carries the encoded information. This mismatch is fundamental: it is a property of the tokenisation architecture, not of model scale or training data.
+      </p>
+      <p>
+        We generate 500 samples using <a href="https://pypi.org/project/pyfiglet/" target="_blank" rel="noopener">pyfiglet</a> with 50+ fonts and random 7-character alphanumeric strings. Each sample is evaluated under two input modalities: raw ASCII text and a PNG image rendering.
+      </p>
     </div>
-  </section>
 
-  <!-- Method -->
-  <section id="method">
-    <h2>Method</h2>
-    <p>We design CAPTCHAs around two perceptual capabilities where humans demonstrably outperform frontier AI systems.</p>
-
-    <div class="method-cols">
-      <div class="method-block">
-        <div class="tag">ASCII Art CAPTCHAs</div>
-        <h3>Gestalt Mismatch</h3>
-        <ul>
-          <li><strong>Generator:</strong> pyfiglet (50+ fonts, 7-character alphanumeric strings)</li>
-          <li><strong>Dataset:</strong> 500 samples, both text and image renderings</li>
-          <li><strong>Why it works:</strong> LLM tokenisers fragment ASCII art into character-level tokens, destroying the spatial structure humans read holistically</li>
-          <li><strong>Models:</strong> GPT-4o (text + image), GPT-4o Mini (text + image), Gemini 1.5 Pro, Gemini 1.5 Flash, Gemini 2.0 Flash, Claude 3.5 Sonnet</li>
-          <li><strong>Metric:</strong> Exact-match accuracy + character-level similarity (LCS-based)</li>
-        </ul>
-      </div>
-      <div class="method-block">
-        <div class="tag">Audio CAPTCHAs</div>
-        <h3>Cocktail-Party Effect</h3>
-        <ul>
-          <li><strong>Generator:</strong> XTTS-v2 TTS with simultaneous overlapping speakers</li>
-          <li><strong>Conditions:</strong> Clean, White Noise, Bandpass Filtered Noise, Pink Noise</li>
-          <li><strong>Why it works:</strong> Humans use spatial attention and prosodic cues to isolate target speakers; current audio LLMs treat mixed audio as a single waveform</li>
-          <li><strong>Models:</strong> GPT-4o Audio Mini, Gemini 2.0 Flash, VoxTral Small</li>
-          <li><strong>Metric:</strong> 4-alternative forced-choice (4AFC) accuracy</li>
-        </ul>
+    <!-- Interactive figlet example -->
+    <div class="box" style="margin-top:1.5rem;">
+      <p class="has-text-weight-semibold" style="margin-bottom:0.75rem; font-size:0.9rem;">Live example: try it yourself</p>
+      <div class="figlet-wrap">
+        <div class="figlet-controls">
+          <label for="figlet-font">Font:</label>
+          <select id="figlet-font" disabled>
+            <option value="Standard">Standard</option>
+            <option value="Doom" selected>Doom</option>
+            <option value="Slant">Slant</option>
+            <option value="Small">Small</option>
+            <option value="Banner">Banner</option>
+          </select>
+          <span id="figlet-status">loading fonts&hellip;</span>
+        </div>
+        <div class="captcha-frame">
+          <pre id="figlet-output">loading&hellip;</pre>
+        </div>
+        <p class="captcha-label">Target string: <strong id="figlet-target" style="color:#cdd6f4; font-family: 'IBM Plex Mono', monospace;">HORSE3903</strong></p>
       </div>
     </div>
 
-    <h3 style="margin-top: 2rem; margin-bottom: 0.75rem;">ASCII CAPTCHA Example</h3>
-    <div class="ascii-demo">
-      <pre id="ascii-example">Loading ASCII art...</pre>
+    <!-- Failure gallery -->
+    <h3 class="title is-4 section-heading" style="margin-top:2.5rem;">Model Failure Gallery</h3>
+    <p class="content">Each frontier model consistently returns outputs bearing no resemblance to the target string. Below are representative failure cases.</p>
+
+    <div class="columns is-multiline">
+      <div class="column is-one-third">
+        <div class="failure-card">
+          <img src="assets/chatgpt_ascii_failed.png" alt="GPT-4o failure" />
+          <div class="failure-card-body">
+            <span class="failure-model-tag">GPT-4o</span>
+            <p class="failure-caption">Outputs a confident but entirely incorrect transcription.</p>
+          </div>
+        </div>
+      </div>
+      <div class="column is-one-third">
+        <div class="failure-card">
+          <img src="assets/gemini_ascii_failed.png" alt="Gemini 1.5 Pro failure" />
+          <div class="failure-card-body">
+            <span class="failure-model-tag">Gemini 1.5 Pro</span>
+            <p class="failure-caption">Recognises ASCII art structure but cannot decode the characters.</p>
+          </div>
+        </div>
+      </div>
+      <div class="column is-one-third">
+        <div class="failure-card">
+          <img src="assets/gemini_flash_ascii_failed.png" alt="Gemini 1.5 Flash failure" />
+          <div class="failure-card-body">
+            <span class="failure-model-tag">Gemini 1.5 Flash</span>
+            <p class="failure-caption">Flash variant shows identical failure patterns to the Pro model.</p>
+          </div>
+        </div>
+      </div>
     </div>
-    <p class="ascii-caption">A sample ASCII CAPTCHA rendered in the "Doom" font. Humans read "HORSE" immediately; every frontier model returned near-zero similarity.</p>
+  </div>
+</section>
 
-    <div class="figure" style="margin-top: 2rem;">
-      <img src="assets/example_captcha.png" alt="Example CAPTCHA sample from the dataset" />
-      <p class="figure-caption"><strong>Figure 1.</strong> A representative sample from the ASCII CAPTCHA dataset. The target string is encoded in pyfiglet's block-letter ASCII art. Models receive either the raw ASCII text or an image rendering and must transcribe the hidden word.</p>
+<hr style="margin:0;" />
+
+<!-- ── Audio CAPTCHA ─────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 section-heading has-text-centered">Overlapping Audio CAPTCHAs</h2>
+    <div class="content">
+      <p>
+        The cocktail-party effect describes the human ability to selectively attend to a single speaker in a noisy, multi-speaker environment. We exploit this by presenting a target question spoken by one voice simultaneously with a distractor question from a second voice. The user must answer the target question, ignoring the distractor.
+      </p>
+      <p>
+        Audio is synthesised using XTTS-v2 and evaluated across four noise augmentation conditions: clean, white noise, bandpass-filtered noise, and pink noise. Models receive the mixed audio and must select the correct answer from four alternatives.
+      </p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Results -->
-  <section id="results">
-    <h2>Results</h2>
+<hr style="margin:0;" />
 
-    <h3>ASCII CAPTCHAs: Text Input</h3>
-    <div class="table-wrapper">
-      <table>
+<!-- ── Results ───────────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 section-heading has-text-centered">Results</h2>
+
+    <h3 class="title is-4 section-heading" style="margin-top:1.5rem;">ASCII CAPTCHAs — Text Input</h3>
+    <div class="table-container">
+      <table class="table is-bordered is-striped is-hoverable is-fullwidth results-table">
         <thead>
           <tr>
-            <th>Model</th>
+            <th style="text-align:left;">Model</th>
             <th>Exact Match</th>
             <th>Char Similarity</th>
-            <th>Notes</th>
+            <th style="text-align:left; font-weight:400; font-style:italic; font-size:0.78rem;">Notes</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>GPT-4o</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.15%</td>
-            <td>Consistent nonsense output</td>
-          </tr>
-          <tr>
-            <td>GPT-4o Mini</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.14%</td>
-            <td>Slightly lower similarity than full model</td>
-          </tr>
-          <tr>
-            <td>Gemini 1.5 Pro</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.18%</td>
-            <td>Occasional partial character matches</td>
-          </tr>
-          <tr>
-            <td>Gemini 1.5 Flash</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.16%</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Gemini 2.0 Flash</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.17%</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Claude 3.5 Sonnet</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.15%</td>
-            <td></td>
-          </tr>
+          <tr><td class="model-col">GPT-4o</td><td class="num-bad">0.00%</td><td class="num-bad">0.15%</td><td style="font-size:0.8rem; text-align:left;">Consistent nonsense output</td></tr>
+          <tr><td class="model-col">GPT-4o Mini</td><td class="num-bad">0.00%</td><td class="num-bad">0.14%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
+          <tr><td class="model-col">Gemini 1.5 Pro</td><td class="num-bad">0.00%</td><td class="num-bad">0.18%</td><td style="font-size:0.8rem; text-align:left;">Occasional partial character matches</td></tr>
+          <tr><td class="model-col">Gemini 1.5 Flash</td><td class="num-bad">0.00%</td><td class="num-bad">0.16%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
+          <tr><td class="model-col">Gemini 2.0 Flash</td><td class="num-bad">0.00%</td><td class="num-bad">0.17%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
+          <tr><td class="model-col">Claude 3.5 Sonnet</td><td class="num-bad">0.00%</td><td class="num-bad">0.15%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="table-caption"><strong>Table 1.</strong> ASCII CAPTCHA results under text input. All models receive the raw ASCII art as plain text. Exact match: fraction of samples where the model's response exactly matches the target string. Char similarity: LCS-based character-level similarity averaged over all samples.</p>
+    <p class="table-caption">Table 1. ASCII CAPTCHA results under text input. Char similarity is LCS-based, averaged over 500 samples.</p>
 
-    <h3>ASCII CAPTCHAs: Image Input</h3>
-    <div class="table-wrapper">
-      <table>
+    <h3 class="title is-4 section-heading" style="margin-top:2rem;">ASCII CAPTCHAs — Image Input</h3>
+    <div class="table-container">
+      <table class="table is-bordered is-striped is-hoverable is-fullwidth results-table">
         <thead>
           <tr>
-            <th>Model</th>
+            <th style="text-align:left;">Model</th>
             <th>Exact Match</th>
             <th>Char Similarity</th>
-            <th>Notes</th>
+            <th style="text-align:left; font-weight:400; font-style:italic; font-size:0.78rem;">Notes</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>GPT-4o</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.16%</td>
-            <td>Image input marginally higher similarity</td>
-          </tr>
-          <tr>
-            <td>GPT-4o Mini</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.13%</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Gemini 1.5 Pro</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.19%</td>
-            <td>Best image-input similarity across all models</td>
-          </tr>
-          <tr>
-            <td>Gemini 1.5 Flash</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.15%</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Gemini 2.0 Flash</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.16%</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Claude 3.5 Sonnet</td>
-            <td class="num cell-bad">0.00%</td>
-            <td class="num cell-bad">0.14%</td>
-            <td></td>
-          </tr>
+          <tr><td class="model-col">GPT-4o</td><td class="num-bad">0.00%</td><td class="num-bad">0.16%</td><td style="font-size:0.8rem; text-align:left;">Marginally higher similarity than text</td></tr>
+          <tr><td class="model-col">GPT-4o Mini</td><td class="num-bad">0.00%</td><td class="num-bad">0.13%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
+          <tr><td class="model-col">Gemini 1.5 Pro</td><td class="num-bad">0.00%</td><td class="num-bad">0.19%</td><td style="font-size:0.8rem; text-align:left;">Best image-input similarity</td></tr>
+          <tr><td class="model-col">Gemini 1.5 Flash</td><td class="num-bad">0.00%</td><td class="num-bad">0.15%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
+          <tr><td class="model-col">Gemini 2.0 Flash</td><td class="num-bad">0.00%</td><td class="num-bad">0.16%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
+          <tr><td class="model-col">Claude 3.5 Sonnet</td><td class="num-bad">0.00%</td><td class="num-bad">0.14%</td><td style="font-size:0.8rem; text-align:left;"></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="table-caption"><strong>Table 2.</strong> ASCII CAPTCHA results under image input. Models receive a PNG rendering of the ASCII art. Despite the visual modality, no model achieved non-zero exact-match accuracy.</p>
+    <p class="table-caption">Table 2. ASCII CAPTCHA results under image input. No model achieved non-zero exact-match accuracy despite the visual modality.</p>
 
-    <h3>Failure Gallery</h3>
-    <p>Representative failure cases from the evaluation. In every case, the model response bears no meaningful resemblance to the target string.</p>
-    <div class="gallery">
-      <div class="gallery-item">
-        <img src="assets/chatgpt_ascii_failed.png" alt="GPT-4o failure on ASCII CAPTCHA" />
-        <div class="gallery-item-caption">
-          <span class="model-label">GPT-4o</span>
-          Typical failure: model outputs a plausible-sounding but entirely incorrect transcription.
-        </div>
-      </div>
-      <div class="gallery-item">
-        <img src="assets/gemini_ascii_failed.png" alt="Gemini 1.5 Pro failure on ASCII CAPTCHA" />
-        <div class="gallery-item-caption">
-          <span class="model-label">Gemini 1.5 Pro</span>
-          Model recognises it is looking at ASCII art but cannot decode the characters.
-        </div>
-      </div>
-      <div class="gallery-item">
-        <img src="assets/gemini_flash_ascii_failed.png" alt="Gemini 1.5 Flash failure on ASCII CAPTCHA" />
-        <div class="gallery-item-caption">
-          <span class="model-label">Gemini 1.5 Flash</span>
-          Flash variant shows similar failure patterns to the Pro model.
-        </div>
-      </div>
-    </div>
-
-    <h3 style="margin-top: 2.5rem;">Audio CAPTCHAs</h3>
-    <div class="table-wrapper">
-      <table>
+    <h3 class="title is-4 section-heading" style="margin-top:2rem;">Audio CAPTCHAs — 4AFC Accuracy</h3>
+    <div class="table-container">
+      <table class="table is-bordered is-striped is-hoverable is-fullwidth results-table">
         <thead>
           <tr>
-            <th>Model</th>
+            <th style="text-align:left;">Model</th>
             <th>Clean</th>
             <th>White Noise</th>
             <th>Bandpass</th>
@@ -553,50 +441,44 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>GPT-4o Audio Mini</td>
-            <td class="num">25.0%</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">0.0%</td>
-          </tr>
-          <tr>
-            <td>Gemini 2.0 Flash</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">12.5%</td>
-          </tr>
-          <tr>
-            <td>VoxTral Small</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">0.0%</td>
-            <td class="num cell-bad">12.5%</td>
-            <td class="num cell-bad">12.5%</td>
-          </tr>
-          <tr>
-            <td><em>Random baseline</em></td>
-            <td class="num cell-na">25.0%</td>
-            <td class="num cell-na">25.0%</td>
-            <td class="num cell-na">25.0%</td>
-            <td class="num cell-na">25.0%</td>
-          </tr>
+          <tr><td class="model-col">GPT-4o Audio Mini</td><td>25.0%</td><td class="num-bad">12.5%</td><td class="num-bad">12.5%</td><td class="num-bad">0.0%</td></tr>
+          <tr><td class="model-col">Gemini 2.0 Flash</td><td class="num-bad">12.5%</td><td class="num-bad">12.5%</td><td class="num-bad">12.5%</td><td class="num-bad">12.5%</td></tr>
+          <tr><td class="model-col">VoxTral Small</td><td class="num-bad">12.5%</td><td class="num-bad">0.0%</td><td class="num-bad">12.5%</td><td class="num-bad">12.5%</td></tr>
+          <tr style="background:#f9f9f9;"><td class="model-col" style="color:#888; font-style:italic;">Random baseline</td><td class="num-rand">25.0%</td><td class="num-rand">25.0%</td><td class="num-rand">25.0%</td><td class="num-rand">25.0%</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="table-caption"><strong>Table 3.</strong> Audio CAPTCHA 4AFC accuracy by model and noise condition. The best result (GPT-4o Audio Mini on clean audio, 25%) matches the random baseline for a 4-alternative forced-choice task. All models perform at or below random across all noise conditions.</p>
-  </section>
+    <p class="table-caption">Table 3. Audio CAPTCHA 4AFC accuracy. Best result (25%, GPT-4o Audio Mini, clean) matches the random baseline. All models perform at or below random across all noise conditions.</p>
 
-  <!-- Citation -->
-  <section id="citation">
-    <h2>Citation</h2>
-    <p>If you find this work useful, please cite:</p>
-    <button class="copy-btn" onclick="copyBibtex(this)">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      Copy BibTeX
-    </button>
+  </div>
+</section>
+
+<hr style="margin:0;" />
+
+<!-- ── Related Work ──────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 section-heading has-text-centered">Related Links</h2>
+    <div class="content has-text-justified">
+      <ul>
+        <li><a href="https://arxiv.org/abs/2303.08774" target="_blank" rel="noopener">GPT-4 Technical Report</a> — multimodal capabilities of the model family evaluated in this work.</li>
+        <li><a href="https://arxiv.org/abs/2312.11805" target="_blank" rel="noopener">Gemini: A Family of Highly Capable Multimodal Models</a> — basis for the Gemini model family used in evaluation.</li>
+        <li><a href="https://captcha.com" target="_blank" rel="noopener">CAPTCHA overview</a> — background on the history and design of CAPTCHA systems.</li>
+        <li><a href="https://github.com/pwaller/pyfiglet" target="_blank" rel="noopener">pyfiglet</a> — Python implementation of FIGlet used for ASCII art generation.</li>
+        <li><a href="https://coqui.ai/blog/tts/open_xtts" target="_blank" rel="noopener">XTTS-v2</a> — TTS model used for audio CAPTCHA synthesis.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr style="margin:0;" />
+
+<!-- ── BibTeX ────────────────────────────────────────────────────────────── -->
+<section class="section" id="citation">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3 section-heading has-text-centered">BibTeX</h2>
     <div class="bibtex-box">
-      <pre id="bibtex-content">@misc{chong2026perceptualgaps,
+      <pre>@misc{chong2026perceptualgaps,
   title         = {Perceptual Gaps: {ASCII} Art and Overlapping Audio as {CAPTCHA}s},
   author        = {Chong, Choon-Hou Rafael},
   year          = {2026},
@@ -606,53 +488,59 @@
   url           = {https://arxiv.org/abs/2604.03612}
 }</pre>
     </div>
-  </section>
+  </div>
+</section>
 
-</div>
-
-<footer>
+<!-- ── Footer ────────────────────────────────────────────────────────────── -->
+<footer class="footer">
   <div class="container">
-    <p>
-      <a href="https://arxiv.org/abs/2604.03612" target="_blank" rel="noopener">arXiv:2604.03612</a>
-      &nbsp;&middot;&nbsp;
-      <a href="https://github.com/horse-3903/captcha-llm" target="_blank" rel="noopener">GitHub</a>
-      &nbsp;&middot;&nbsp;
-      <a href="https://horse-3903.github.io" target="_blank" rel="noopener">horse-3903.github.io</a>
-    </p>
-    <p style="margin-top: 0.4rem;">Hwa Chong Institution, Singapore &middot; 2026</p>
+    <div class="content has-text-centered">
+      <p>
+        This website is based on the
+        <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>
+        project page template, licensed under a
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> licence.
+      </p>
+      <p>
+        <a href="https://arxiv.org/abs/2604.03612" target="_blank" rel="noopener">arXiv:2604.03612</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://github.com/horse-3903/captcha-llm" target="_blank" rel="noopener">GitHub</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://horse-3903.github.io" target="_blank" rel="noopener">horse-3903.github.io</a>
+      </p>
+    </div>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/figlet@1.8.0/lib/figlet.js"></script>
 <script>
-  // Render ASCII art example
-  function renderExample() {
-    if (typeof figlet === "undefined") {
-      document.getElementById("ascii-example").textContent =
-        "  _   _  ___  ____  ____  _____\n | | | |/ _ \\|  _ \\/ ___|| ____|\n | |_| | | | | |_) \\___ \\|  _|\n |  _  | |_| |  _ < ___) | |___\n |_| |_|\\___/|_| \\_\\____/|_____|\n";
-      return;
+  const TARGET = "HORSE3903";
+  let fontsReady = false;
+
+  figlet.defaults({ fontPath: "figlet-fonts/" });
+
+  figlet.preloadFonts(["Standard", "Doom", "Slant", "Small", "Banner"], () => {
+    fontsReady = true;
+    document.getElementById("figlet-status").textContent = "";
+    document.getElementById("figlet-font").disabled = false;
+    renderFiglet();
+  });
+
+  setTimeout(() => {
+    if (!fontsReady) {
+      document.getElementById("figlet-status").textContent = "failed to load fonts";
+      document.getElementById("figlet-output").textContent = "(font unavailable)";
     }
-    figlet.defaults({ fontPath: "figlet-fonts/" });
-    figlet.text("HORSE", { font: "Doom" }, function(err, text) {
-      if (!err && text) document.getElementById("ascii-example").textContent = text;
+  }, 10000);
+
+  function renderFiglet() {
+    const font = document.getElementById("figlet-font").value;
+    figlet.text(TARGET, { font }, (err, text) => {
+      document.getElementById("figlet-output").textContent = err ? "(render error)" : text;
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", renderExample);
-  } else {
-    setTimeout(renderExample, 300);
-  }
-
-  // Copy BibTeX
-  function copyBibtex(btn) {
-    const text = document.getElementById("bibtex-content").textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-      setTimeout(() => { btn.innerHTML = orig; }, 2000);
-    });
-  }
+  document.getElementById("figlet-font").addEventListener("change", renderFiglet);
 </script>
 </body>
 </html>
