@@ -321,11 +321,14 @@
         <div class="figlet-controls">
           <label for="figlet-font">Font:</label>
           <select id="figlet-font" disabled>
-            <option value="Standard">Standard</option>
-            <option value="Doom" selected>Doom</option>
-            <option value="Slant">Slant</option>
-            <option value="Small">Small</option>
-            <option value="Banner">Banner</option>
+            <option value="com_sen_">com_sen_</option>
+            <option value="ebbs_1__" selected>ebbs_1__</option>
+            <option value="ebbs_2__">ebbs_2__</option>
+            <option value="ascii___">ascii___</option>
+            <option value="bubble__">bubble__</option>
+            <option value="charact1">charact1</option>
+            <option value="charact2">charact2</option>
+            <option value="characte">characte</option>
           </select>
           <span id="figlet-status">loading fonts&hellip;</span>
         </div>
@@ -533,7 +536,7 @@
 
   figlet.defaults({ fontPath: "figlet-fonts/" });
 
-  figlet.preloadFonts(["Standard", "Doom", "Slant", "Small", "Banner"], () => {
+  figlet.preloadFonts(["com_sen_", "ebbs_1__", "ebbs_2__", "ascii___", "bubble__", "charact1", "charact2", "characte"], () => {
     fontsReady = true;
     document.getElementById("figlet-status").textContent = "";
     document.getElementById("figlet-font").disabled = false;

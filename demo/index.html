@@ -399,11 +399,14 @@
         <span class="terminal-title">ASCII CAPTCHA — interactive</span>
         <div class="terminal-controls">
           <select id="fontSel" disabled>
-            <option value="Standard">Standard</option>
-            <option value="Doom">Doom</option>
-            <option value="Slant">Slant</option>
-            <option value="Small">Small</option>
-            <option value="Banner">Banner</option>
+            <option value="com_sen_">com_sen_</option>
+            <option value="ebbs_1__">ebbs_1__</option>
+            <option value="ebbs_2__">ebbs_2__</option>
+            <option value="ascii___">ascii___</option>
+            <option value="bubble__">bubble__</option>
+            <option value="charact1">charact1</option>
+            <option value="charact2">charact2</option>
+            <option value="characte">characte</option>
           </select>
           <button class="btn btn-green btn-sm" id="newBtn" onclick="newChallenge()" disabled>New</button>
         </div>
@@ -626,16 +629,16 @@
 <script src="https://cdn.jsdelivr.net/npm/figlet@1.8.0/lib/figlet.js"></script>
 <script>
 // ── Config ─────────────────────────────────────────────────────────────────
-figlet.defaults({ fontPath: 'https://cdn.jsdelivr.net/npm/figlet@1.8.0/fonts/' });
+figlet.defaults({ fontPath: 'figlet-fonts/' });
 
-const FONTS   = ['Standard', 'Doom', 'Slant', 'Small', 'Banner'];
+const FONTS   = ['com_sen_', 'ebbs_1__', 'ebbs_2__', 'ascii___', 'bubble__', 'charact1', 'charact2', 'characte'];
 const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 // Failure examples: (text, font, model, modelResponse, note)
 const FAILURES = [
   {
     text: 'PRISM',
-    font: 'Standard',
+    font: 'com_sen_',
     model: 'GPT-5.2',
     mode: 'text input',
     resp: 'BLQSM',
@@ -644,16 +647,16 @@ const FAILURES = [
   },
   {
     text: 'KRYPT',
-    font: 'Doom',
+    font: 'ebbs_1__',
     model: 'Claude Sonnet 4.5',
     mode: 'text input',
     resp: 'KZUBT',
     sim: 20,
-    note: 'Doom font serifs create ambiguous letterforms',
+    note: 'Dense hash characters create ambiguous letterforms',
   },
   {
     text: 'NEXUS',
-    font: 'Small',
+    font: 'charact2',
     model: 'Gemini 3 Flash',
     mode: 'image input',
     resp: 'NEXV5',
@@ -662,7 +665,7 @@ const FAILURES = [
   },
   {
     text: 'GHOST',
-    font: 'Slant',
+    font: 'ascii___',
     model: 'Gemini 3 Pro (thinking)',
     mode: 'image input',
     resp: 'GH0ST',
