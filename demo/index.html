@@ -622,78 +622,49 @@
   &nbsp;·&nbsp;
   <a href="https://github.com/horse-3903/captcha-llm">horse-3903/captcha-llm</a>
   &nbsp;·&nbsp; MIT License
-  &nbsp;·&nbsp; ASCII art generated in-browser via <a href="https://github.com/patorjk/figlet.js" target="_blank">figlet.js</a>
+  &nbsp;·&nbsp; ASCII art rendered via <a href="https://pypi.org/project/pyfiglet/" target="_blank">pyfiglet</a>
 </footer>
 
 <!-- ── Scripts ────────────────────────────────────────────────────────── -->
-<script src="https://cdn.jsdelivr.net/npm/figlet@1.8.0/lib/figlet.js"></script>
 <script>
-// ── Config ─────────────────────────────────────────────────────────────────
-figlet.defaults({ fontPath: 'figlet-fonts/' });
-
-const FONTS   = ['com_sen_', 'ebbs_1__', 'ebbs_2__', 'ascii___', 'bubble__', 'charact1', 'charact2', 'characte'];
-const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-// Failure examples: (text, font, model, modelResponse, note)
 const FAILURES = [
   {
-    text: 'PRISM',
-    font: 'com_sen_',
-    model: 'GPT-5.2',
-    mode: 'text input',
-    resp: 'BLQSM',
-    sim: 20,
-    note: '12.50% avg text similarity across 250 samples',
+    text: 'PRISM', font: 'com_sen_', model: 'GPT-5.2', mode: 'text input',
+    resp: 'BLQSM', sim: 20, note: '12.50% avg text similarity across 250 samples',
+    art: `               ##                 \n                                  \n #####  ##### ###   ##### ##  ##  \n ##  ## ##  ## ##  ##     ####### \n ##  ## ##     ##   ####  ####### \n #####  ##     ##      ## ## # ## \n ##     ##    #### #####  ##   ## \n ##                               \n`,
   },
   {
-    text: 'KRYPT',
-    font: 'ebbs_1__',
-    model: 'Claude Sonnet 4.5',
-    mode: 'text input',
-    resp: 'KZUBT',
-    sim: 20,
-    note: 'Dense hash characters create ambiguous letterforms',
+    text: 'KRYPT', font: 'ebbs_1__', model: 'Claude Sonnet 4.5', mode: 'text input',
+    resp: 'KZUBT', sim: 20, note: 'Dense hash characters create ambiguous letterforms',
+    art: `                                    \n ##                           ##    \n ##     #####  ##  ## ##### ######  \n ## ##  ##  ## ##  ## ##  ##  ##    \n ####   ##     ##  ## ##  ##  ##    \n ## ##  ##      ##### #####   ##    \n ##  ## ##        ##  ##       ###  \n               ####   ##            \n`,
   },
   {
-    text: 'NEXUS',
-    font: 'charact2',
-    model: 'Gemini 3 Flash',
-    mode: 'image input',
-    resp: 'NEXV5',
-    sim: 60,
-    note: 'Best model overall — still wrong on full string',
+    text: 'NEXUS', font: 'charact2', model: 'Gemini 3 Flash', mode: 'image input',
+    resp: 'NEXV5', sim: 60, note: 'Best model overall — still wrong on full string',
+    art: `                                    \n                                    \n                                    \n #####   #### ##  ## ##  ##  #####  \n ##  ## ###### ####  ##  ## ####    \n ##  ## ##     ####  ##  ##   ####  \n ##  ##  #### ##  ##  ####  #####   \n                                    \n`,
   },
   {
-    text: 'GHOST',
-    font: 'ascii___',
-    model: 'Gemini 3 Pro (thinking)',
-    mode: 'image input',
-    resp: 'GH0ST',
-    sim: 80,
-    note: '145s of reasoning — O vs 0 ambiguity unresolved',
+    text: 'GHOST', font: 'ascii___', model: 'Gemini 3 Pro (thinking)', mode: 'image input',
+    resp: 'GH0ST', sim: 80, note: '145s of reasoning — O vs 0 ambiguity unresolved',
+    art: `        ###                    ##    \n         ##                    ##    \n  ### ## ##      ####   ##### #####  \n ##  ##  #####  ##  ## ##      ##    \n ##  ##  ##  ## ##  ##  #####  ##    \n  #####  ##  ## ##  ##      ## ## ## \n     ## ###  ##  ####  ######   ###  \n #####                               \n`,
   },
 ];
 
-// ── State ──────────────────────────────────────────────────────────────────
+let samples = [];
 let currentAnswer = '';
 let attempts = 0, solved = 0;
-let fontsReady = false;
 
-// ── Font loading ───────────────────────────────────────────────────────────
-figlet.preloadFonts(FONTS, () => {
-  fontsReady = true;
-  enableUI();
-  newChallenge();
-  renderFailures();
-});
-
-// Fallback if figlet or CDN fails
-setTimeout(() => {
-  if (!fontsReady) {
-    document.getElementById('captchaDisplay').textContent = '⚠ Font CDN unavailable. Open the demo directly in a browser.';
-    document.getElementById('failureGrid').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:12px;font-family:var(--font-mono)">Font CDN unavailable — open demo directly to load fonts.</div>';
-  }
-}, 15000);
+fetch('captcha-samples.json')
+  .then(r => r.json())
+  .then(data => {
+    samples = data;
+    enableUI();
+    newChallenge();
+    renderFailures();
+  })
+  .catch(() => {
+    document.getElementById('captchaDisplay').textContent = 'Failed to load samples.';
+  });
 
 function enableUI() {
   document.getElementById('fontSel').disabled   = false;
@@ -702,24 +673,16 @@ function enableUI() {
   document.getElementById('checkBtn').disabled  = false;
 }
 
-// ── Challenge generation ───────────────────────────────────────────────────
-function randomString(len = 7) {
-  return Array.from({ length: len }, () => CHARSET[Math.floor(Math.random() * CHARSET.length)]).join('');
-}
-
 function newChallenge() {
-  if (!fontsReady) return;
-  const font   = document.getElementById('fontSel').value;
-  const text   = randomString();
-  currentAnswer = text;
+  if (!samples.length) return;
+  const font = document.getElementById('fontSel').value;
+  const pool = samples.filter(s => s.font === font);
+  const s = pool[Math.floor(Math.random() * pool.length)];
+  currentAnswer = s.text;
 
   const display = document.getElementById('captchaDisplay');
   display.classList.remove('loading');
-
-  figlet.text(text, { font }, (err, art) => {
-    if (err) { display.textContent = `Error rendering font.\n\n${err}`; return; }
-    display.textContent = art;
-  });
+  display.textContent = s.art;
 
   const input = document.getElementById('userInput');
   input.value = '';
@@ -727,13 +690,11 @@ function newChallenge() {
   hideResult();
 }
 
-// ── Answer checking ────────────────────────────────────────────────────────
 function similarity(a, b) {
   a = a.toUpperCase().trim();
   b = b.toUpperCase().trim();
   if (!a || !b) return 0;
   const la = a.length, lb = b.length;
-  // Simple longest-common-subsequence ratio (mimics SequenceMatcher)
   const dp = Array.from({ length: la + 1 }, () => new Array(lb + 1).fill(0));
   for (let i = 1; i <= la; i++)
     for (let j = 1; j <= lb; j++)
@@ -747,10 +708,10 @@ function checkAnswer() {
   const guess = input.value.toUpperCase().trim();
   if (!guess) return;
 
-  const correct  = currentAnswer.toUpperCase();
-  const isExact  = guess === correct;
-  const sim      = similarity(guess, correct);
-  const simPct   = Math.round(sim * 100);
+  const correct = currentAnswer.toUpperCase();
+  const isExact = guess === correct;
+  const sim     = similarity(guess, correct);
+  const simPct  = Math.round(sim * 100);
 
   attempts++;
 
@@ -783,52 +744,36 @@ function updateStats() {
     ? Math.round((solved / attempts) * 100) + '%' : '—';
 }
 
-// ── Font selector change ───────────────────────────────────────────────────
-document.getElementById('fontSel').addEventListener('change', () => {
-  if (fontsReady && currentAnswer) {
-    const display = document.getElementById('captchaDisplay');
-    figlet.text(currentAnswer, { font: document.getElementById('fontSel').value }, (err, art) => {
-      if (!err) display.textContent = art;
-    });
-  }
-});
+document.getElementById('fontSel').addEventListener('change', newChallenge);
 
-// ── Render failure gallery ─────────────────────────────────────────────────
 function renderFailures() {
   const grid = document.getElementById('failureGrid');
   grid.innerHTML = '';
-
-  let remaining = FAILURES.length;
-
   FAILURES.forEach(f => {
-    const card = document.createElement('div');
-    card.className = 'failure-card';
-
     const modeStyle = f.mode.includes('image')
       ? 'background:rgba(88,166,255,0.1);color:var(--blue);border-color:rgba(88,166,255,0.2)'
       : 'background:rgba(188,140,255,0.1);color:var(--purple);border-color:rgba(188,140,255,0.2)';
-
-    figlet.text(f.text, { font: f.font }, (err, art) => {
-      card.innerHTML = `
-        <div class="failure-header">
-          <span class="failure-model">${f.model} <span class="mode-badge" style="${modeStyle}">${f.mode}</span></span>
-          <span class="fail-badge">0% exact</span>
+    const card = document.createElement('div');
+    card.className = 'failure-card';
+    card.innerHTML = `
+      <div class="failure-header">
+        <span class="failure-model">${f.model} <span class="mode-badge" style="${modeStyle}">${f.mode}</span></span>
+        <span class="fail-badge">0% exact</span>
+      </div>
+      <pre class="failure-art">${f.art.replace(/\n$/, '')}</pre>
+      <div class="failure-footer">
+        <div class="failure-row">
+          <span class="failure-label">model:</span>
+          <span class="failure-val-wrong">${f.resp}</span>
         </div>
-        <pre class="failure-art">${err ? f.text : art}</pre>
-        <div class="failure-footer">
-          <div class="failure-row">
-            <span class="failure-label">model:</span>
-            <span class="failure-val-wrong">${f.resp}</span>
-          </div>
-          <div class="failure-row">
-            <span class="failure-label">correct:</span>
-            <span class="failure-val-right">${f.text}</span>
-          </div>
-          <div class="failure-sim">${f.sim}% similarity — ${f.note}</div>
+        <div class="failure-row">
+          <span class="failure-label">correct:</span>
+          <span class="failure-val-right">${f.text}</span>
         </div>
-      `;
-      grid.appendChild(card);
-    });
+        <div class="failure-sim">${f.sim}% similarity — ${f.note}</div>
+      </div>
+    `;
+    grid.appendChild(card);
   });
 }
 </script>

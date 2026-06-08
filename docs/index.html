@@ -529,32 +529,16 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/figlet@1.8.0/lib/figlet.js"></script>
 <script>
-  const TARGET = "HORSE3903";
-  let fontsReady = false;
+  const HORSE3903 = {"com_sen_":" ##                                 #####   #####   #####   #####   \n ##                                ##   ## ##   ## ##   ## ##   ##  \n #####   ####  #####   #####  ####      ## ##   ## ##  ###      ##  \n ##  ## ##  ## ##  ## ##     ##  ##  ####   ###### ## ####   ####   \n ##  ## ##  ## ##      ####  ######     ##      ## #### ##      ##  \n ##  ## ##  ## ##         ## ##    ##   ## ##   ## ###  ## ##   ##  \n ##  ##  ####  ##     #####   ##### #####   #####   #####   #####   \n                                                                    \n","ebbs_1__":"                                                               \n ##                               ######  ####   ####  ######  \n ##      ####  #####   #####  ####    ## ##  ## ##  ##     ##  \n #####  ##  ## ##  ## ##     ##  ## ###  ##  ## ## ###   ###   \n ##  ## ##  ## ##      ####  ######   ##  ##### ### ##     ##  \n ##  ## ##  ## ##         ## ##   ##  ##     ## ##  ## ##  ##  \n ##  ##  ####  ##     #####   #### ####   ####   ####   ####   \n                                                               \n","ebbs_2__":" ##                                 #####   #####   #####   #####   \n ##                                ##   ## ##   ## ##   ## ##   ##  \n #####   ####  #####   #####  ####      ## ##   ## ##  ###      ##  \n ##  ## ##  ## ##  ## ##     ##  ##  ####   ###### ## # ##   ####   \n ##  ## ##  ## ##      ####  ######     ##      ## ###  ##      ##  \n ##  ## ##  ## ##         ## ##    ##   ## ##   ## ##   ## ##   ##  \n ##  ##  ####  ##     #####   ##### #####   #####   #####   #####   \n                                                                    \n","ascii___":" ###                                  ####   ####   ####   ####   \n  ##                                 ##  ## ##  ## ##  ## ##  ##  \n  ##      #### ######   #####   ####     ## ##  ## ## ###     ##  \n  #####  ##  ## ##  ## ##      ##  ##  ###   ##### ######   ###   \n  ##  ## ##  ## ##      #####  ######    ##     ## ### ##     ##  \n  ##  ## ##  ## ##          ## ##    ##  ##    ##  ##  ## ##  ##  \n ###  ##  #### ####    ######   ##### ####   ###    ####   ####   \n                                                                  \n","bubble__":" ###                                   #####   ####   ####  #####   \n ###       ###  ######   ####    ####  ###### ##  ## ###### ######  \n ###     ### ## ####### ### ## ###  ##     ## ##  ## ##  ##     ##  \n ######  ### ## ###  ##  ###   ### ###   ###   ##### ##  ##   ###   \n ####### ### ## ###       ###  ###         ##     ## ##  ##     ##  \n ### ### ###### ###     ## ### ####### ###### ##  ## ###### ######  \n ### ###   ###  ###      ####    ####  #####   ####   ####  #####   \n                                                                    \n","charact1":"                                                                \n ##                                ###### ######  ##### ######  \n ##     ###### ###### ###### ######    ## ##  ## ##  ##     ##  \n ###### ##  ## ##  ## ##     ##  ##  ###  ##  ## ## ###   ###   \n ##  ## ##  ## ##     ###### ######    ## ###### ### ##     ##  \n ##  ## ##  ## ##         ## ##    ##  ##     ## ##  ## ##  ##  \n ##  ## ###### ##     ###### ##### ###### ###### #####  ######  \n                                                                \n","charact2":"                                                               \n ##                               ######  ####   ##### ######  \n ##                                   ## ##  ## ##  ##     ##  \n #####   ####  #####   #####  ####  ###  ##  ## ## ###   ###   \n ##  ## ##  ## ##  ## ####   ######   ##  ##### ### ##     ##  \n ##  ## ##  ## ##       #### ##   ##  ##     ## ##  ## ##  ##  \n ##  ##  ####  ##     #####   #### ####  #####  #####   ####   \n                                                               \n","characte":"                                                                 \n ##                                 ###### ######  ##### ######  \n ##                                     ## ##  ## ##  ##     ##  \n ###### ###### ###### ###### ######   ###  ##  ## ## ###   ###   \n ##  ## ##  ## ##  ## ###    ######     ## ###### ### ##     ##  \n ##  ## ##  ## ##       #### ##     ##  ##     ## ##  ## ##  ##  \n ##  ## ###### ##     ###### ###### ###### ###### #####  ######  \n                                                                 \n"};
 
-  figlet.defaults({ fontPath: "figlet-fonts/" });
-
-  figlet.preloadFonts(["com_sen_", "ebbs_1__", "ebbs_2__", "ascii___", "bubble__", "charact1", "charact2", "characte"], () => {
-    fontsReady = true;
-    document.getElementById("figlet-status").textContent = "";
-    document.getElementById("figlet-font").disabled = false;
-    renderFiglet();
-  });
-
-  setTimeout(() => {
-    if (!fontsReady) {
-      document.getElementById("figlet-status").textContent = "failed to load fonts";
-      document.getElementById("figlet-output").textContent = "(font unavailable)";
-    }
-  }, 10000);
+  document.getElementById("figlet-font").disabled = false;
+  document.getElementById("figlet-status").textContent = "";
+  renderFiglet();
 
   function renderFiglet() {
     const font = document.getElementById("figlet-font").value;
-    figlet.text(TARGET, { font }, (err, text) => {
-      document.getElementById("figlet-output").textContent = err ? "(render error)" : text;
-    });
+    document.getElementById("figlet-output").textContent = HORSE3903[font] || "(unavailable)";
   }
 
   document.getElementById("figlet-font").addEventListener("change", renderFiglet);
